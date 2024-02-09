@@ -1,7 +1,7 @@
 {
-  "name": "parity-action-template",
+  "name": "metrics",
   "version": "0.0.1",
-  "description": "GitHub action template for Parity",
+  "description": "GitHub metrics",
   "main": "src/index.ts",
   "scripts": {
     "start": "node dist",

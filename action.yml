@@ -1,5 +1,5 @@
-name: "Example Action"
-description: "This values need to be changed"
+name: "GitHub Metrics"
+description: "Get the metrics for a repository"
 author: Bullrich
 branding:
   icon: copy
