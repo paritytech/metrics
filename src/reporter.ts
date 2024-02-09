@@ -69,8 +69,6 @@ export const generateSummary = (
     .addRaw(averageReviews)
     .addEOL();
 
-  const prDetailedChart = perPRChart(prAverage);
-
   text = text
     .addHeading("Average duration per month", 3)
     .addEOL()
@@ -110,83 +108,6 @@ export const generateSummary = (
     .addEOL();
 
   return text;
-};
-
-type GanttMatch = [number, string][];
-
-const perPRChart = (
-  prs: PullRequestAverage[],
-): {
-  timeToCloseGanttChart: string;
-  timeToFirstReviewGanttChart: string;
-  amountOfReviewsGanttChart: string;
-} => {
-  const highestTimeToClose = Math.max(
-    ...prs.map(({ timeToClose }) => timeToClose ?? 0),
-  );
-  const highestTimeToFirstReview = Math.max(
-    ...prs.map(({ timeToFirstReview }) => timeToFirstReview ?? 0),
-  );
-
-  const timeToCloseGantt: GanttMatch = [];
-  const timeToFirstReviewGantt: GanttMatch = [];
-  const amountOfReviews: GanttMatch = [];
-
-  // Generate gantt chart per PR
-  for (const pr of prs) {
-    if (pr.timeToClose && pr.timeToClose > 0) {
-      timeToCloseGantt.push([
-        pr.number,
-        `${pr.timeToClose} : 0, ${pr.timeToClose}`,
-      ]);
-    }
-    if (pr.timeToFirstReview && pr.timeToFirstReview > 0) {
-      timeToFirstReviewGantt.push([
-        pr.number,
-        `${pr.timeToFirstReview} : 0, ${pr.timeToFirstReview}`,
-      ]);
-    }
-    amountOfReviews.push([
-      pr.number,
-      `${pr.nrOfReviews} : 0, ${pr.nrOfReviews}`,
-    ]);
-  }
-
-  const timeToCloseGanttChart = `\`\`\`mermaid
-    gantt
-      title Time to close PR (hours)
-      dateFormat X
-      axisFormat %s
-      ${timeToCloseGantt
-        .map(([number, msg]) => `section #${number}\n      ${msg}`)
-        .join("\n      ")}
-  \`\`\``;
-
-  const timeToFirstReviewGanttChart = `\`\`\`mermaid
-    gantt
-      title Time to first review (hours)
-      dateFormat X
-      axisFormat %s
-      ${timeToFirstReviewGantt
-        .map(([number, msg]) => `section #${number}\n      ${msg}`)
-        .join("\n      ")}
-  \`\`\``;
-
-  const amountOfReviewsGanttChart = `\`\`\`mermaid
-    gantt
-      title Amount of reviews
-      dateFormat X
-      axisFormat %s
-      ${amountOfReviews
-        .map(([number, msg]) => `section #${number}\n      ${msg}`)
-        .join("\n      ")}
-  \`\`\``;
-
-  return {
-    timeToCloseGanttChart,
-    timeToFirstReviewGanttChart,
-    amountOfReviewsGanttChart,
-  };
 };
 
 const monthWithMatchToGanttChart = (
