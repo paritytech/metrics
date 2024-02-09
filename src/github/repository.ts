@@ -21,7 +21,7 @@ export class RepositoryApi {
       ...this.repo,
       state: "all",
     });
-    console.log(pullRequests);
+    this.logger.debug(JSON.stringify(pullRequests));
     return pullRequests;
   }
 
