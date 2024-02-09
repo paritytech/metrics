@@ -34,7 +34,7 @@ const action = async () => {
     owner: env.OWNER,
     repo: env.REPO,
   });
-  await writeFile("./report.md", report);
+  await writeFile("./report.md", report.stringify());
 };
 
 action()

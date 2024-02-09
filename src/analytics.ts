@@ -9,6 +9,7 @@ import {
 } from "./github/types";
 import { generateSummary } from "./reporter";
 import { splitDates } from "./util";
+import { summary } from "@actions/core";
 
 export interface PullRequestMetrics {
   open: number;
@@ -146,7 +147,7 @@ export const getMetrics = async (
   api: GitHubClient,
   logger: ActionLogger,
   repo: { owner: string; repo: string },
-): Promise<string> => {
+): Promise<typeof summary> => {
   const gen = new ReportGenerator(api, logger, repo);
   const monthMetrics = await gen.getPullRequestMetricsPerMonth();
   const pr = await gen.getPullRequests();
@@ -155,5 +156,5 @@ export const getMetrics = async (
   console.log(averages);
 
   const report = generateSummary(repo, pr, averages, monthMetrics);
-  return report.stringify();
+  return report;
 };
