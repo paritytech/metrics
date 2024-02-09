@@ -27,7 +27,6 @@ export interface PullRequestAverage {
   review?: DurationWithInitialDate;
   timeToClose: number | null;
   timeToFirstReview: number | null;
-  nrOfReviews: number;
 }
 
 export type MonthWithMatch = { month: string; matches: number };
@@ -76,10 +75,9 @@ class ReportGenerator {
     // for (const pr of this.prList.reverse().slice(0, 25)) {
     for (const pr of this.prList.reverse()) {
       const creation = moment(pr.created_at);
-      const reviews = await this.repoApi.getPullRequestInfo(pr.number);
+      const review = await this.repoApi.getPullRequestInfo(pr.number);
 
-      const firstReview =
-        reviews.length > 0 ? reviews.sort(sortReviews)[0].submitted_at : null;
+      const firstReview = review?.submitted_at ?? null;
       const timeToFirstReview =
         firstReview != null
           ? moment(firstReview).diff(creation, "hours")
@@ -101,7 +99,6 @@ class ReportGenerator {
               hoursSinceCreation: timeToFirstReview,
             }
           : undefined,
-        nrOfReviews: reviews.length,
       });
     }
 

@@ -44,10 +44,6 @@ export const generateSummary = (
       filteredTimeToFirstReview.reduce((a, t) => a + t, 0) /
         filteredTimeToFirstReview.length,
     ),
-    nrOfReviews: Math.round(
-      prAverage.reduce((a, { nrOfReviews }) => nrOfReviews + a, 0) /
-        prAverage.length,
-    ),
   };
 
   const averageReviews = `\`\`\`mermaid
@@ -55,8 +51,6 @@ export const generateSummary = (
         title Average Reviews time (hours)
         dateFormat  X
         axisFormat %s
-        section Reviews per PR
-        ${average.nrOfReviews} : 0, ${average.nrOfReviews}
         section Time to close
         ${average.timeToClose} : 0, ${average.timeToClose}
         section Time to first review

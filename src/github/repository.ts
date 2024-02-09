@@ -25,18 +25,24 @@ export class RepositoryApi {
     return pullRequests;
   }
 
-  async getPullRequestInfo(number: number): Promise<PullRequestReviewList> {
+  async getPullRequestInfo(
+    number: number,
+  ): Promise<PullRequestReviewList[number] | null> {
     this.logger.info(
       `Fetching data from ${this.repo.owner}/${this.repo.repo}#${number}`,
     );
 
-    // const boop = await this.api.rest.pulls.listReviews({...this.repo, pull_number:number, per_page:1});
-    // boop.data
-    const reviews = await this.api.paginate(this.api.rest.pulls.listReviews, {
+    const reviews = await this.api.rest.pulls.listReviews({
       ...this.repo,
       pull_number: number,
+      per_page: 1,
     });
-    this.logger.debug(JSON.stringify(reviews));
-    return reviews;
+    if (reviews.data.length > 0) {
+      const [firstReview] = reviews.data;
+      this.logger.debug(JSON.stringify(firstReview));
+      return firstReview;
+    } else {
+      return null;
+    }
   }
 }
