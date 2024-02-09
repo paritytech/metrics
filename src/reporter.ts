@@ -48,7 +48,7 @@ export const generateSummary = (
 
   const averageReviews = `\`\`\`mermaid
     gantt
-        title Average Reviews time (hours)
+        title Average Reviews time (days)
         dateFormat  X
         axisFormat %s
         section Time to close
@@ -68,7 +68,7 @@ export const generateSummary = (
     .addEOL()
     .addRaw(
       monthWithMatchToGanttChart(
-        "Average time to first review (hours)",
+        "Average time to first review (days)",
         splitDatesWithAmount(
           prAverage
             .map(({ review }) => review)
@@ -79,7 +79,7 @@ export const generateSummary = (
     .addEOL()
     .addRaw(
       monthWithMatchToGanttChart(
-        "Average time to merge (hours)",
+        "Average time to merge (days)",
         splitDatesWithAmount(
           prAverage
             .map(({ close }) => close)

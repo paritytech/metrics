@@ -60,10 +60,10 @@ export const splitDatesWithAmount = (
   const monthsWithMatches: MonthWithMatch[] = [];
 
   let currentMonthWithMatch: MonthWithMatch = { month: firstMonth, matches: 1 };
-  for (const {date,hoursSinceCreation} of dates) {
+  for (const {date,daysSinceCreation} of dates) {
     // If it happened in the same month
     if (currentMonth.diff(moment(date), "month") == 0) {
-      currentMonthWithMatch.matches += hoursSinceCreation;
+      currentMonthWithMatch.matches += daysSinceCreation;
     } else {
       // If the new date has more than one month of difference
       // We change the currentMonth variable to the following one

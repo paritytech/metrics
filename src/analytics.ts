@@ -19,7 +19,7 @@ export interface PullRequestMetrics {
 
 export type DurationWithInitialDate = {
   date: string;
-  hoursSinceCreation: number;
+  daysSinceCreation: number;
 };
 
 export interface PullRequestAverage {
@@ -81,23 +81,23 @@ class ReportGenerator {
       const firstReview = review?.submitted_at ?? null;
       const timeToFirstReview =
         firstReview != null
-          ? moment(firstReview).diff(creation, "hours")
+          ? moment(firstReview).diff(creation, "days")
           : null;
       const timeToClose =
         pr.merged_at != null
-          ? moment(pr.merged_at).diff(creation, "hours")
+          ? moment(pr.merged_at).diff(creation, "days")
           : null;
       averages.push({
         number: pr.number,
         timeToClose,
         timeToFirstReview,
         close: timeToClose
-          ? { date: pr.merged_at as string, hoursSinceCreation: timeToClose }
+          ? { date: pr.merged_at as string, daysSinceCreation: timeToClose }
           : undefined,
         review: timeToFirstReview
           ? {
               date: firstReview as string,
-              hoursSinceCreation: timeToFirstReview,
+              daysSinceCreation: timeToFirstReview,
             }
           : undefined,
       });
