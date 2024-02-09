@@ -1,5 +1,6 @@
 /node_modules
 /dist
+/.cli
 
 .DS_Store
 *-error.log
@@ -11,3 +12,4 @@
 .idea
 
 .env
+report.md
