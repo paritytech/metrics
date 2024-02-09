@@ -1,0 +1,15 @@
+name: Fetch metrics
+
+on: [pull_request]
+
+jobs:
+  get_metrics:
+    runs-on: ubuntu-latest
+    name: Get repository metrics
+    steps:
+      - uses: paritytech/metrics@pull/stadistics
+        name: Fetch repo stadistics
+        with:
+          GITHUB_TOKEN: ${{ github.token }}
+          owner: polkadot-fellows
+          repo: runtimes
