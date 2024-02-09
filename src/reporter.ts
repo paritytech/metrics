@@ -6,13 +6,15 @@ import {
   PullRequestAverage,
   PullRequestMetrics,
 } from "./analytics";
-import { splitDatesWithAmount } from "./util";
+import { getAverageAmountPerMonth } from "./util";
+import { ActionLogger } from "./github/types";
 
 export const generateSummary = (
   repo: { owner: string; repo: string },
   metrics: PullRequestMetrics,
   prAverage: PullRequestAverage[],
   monthMetrics: { opened: MonthWithMatch[]; closed: MonthWithMatch[] },
+  logger: ActionLogger
 ): typeof summary => {
   const prChart = `\`\`\`mermaid
   pie title Pull Requests for the repository
@@ -38,11 +40,11 @@ export const generateSummary = (
   const average: Omit<PullRequestAverage, "number"> = {
     timeToClose: Math.round(
       filteredTimeToClose.reduce((a, t) => a + t, 0) /
-        filteredTimeToClose.length,
+      filteredTimeToClose.length,
     ),
     timeToFirstReview: Math.round(
       filteredTimeToFirstReview.reduce((a, t) => a + t, 0) /
-        filteredTimeToFirstReview.length,
+      filteredTimeToFirstReview.length,
     ),
   };
 
@@ -63,28 +65,35 @@ export const generateSummary = (
     .addRaw(averageReviews)
     .addEOL();
 
+  const averageTimeToFirstReview = getAverageAmountPerMonth(
+    prAverage
+      .map(({ review }) => review)
+      .filter((r) => !!r) as DurationWithInitialDate[],
+  );
+
+  console.log("averageTimeToFirstReview", averageTimeToFirstReview);
+
+  const averageTimeToClose = getAverageAmountPerMonth(
+    prAverage
+      .map(({ close }) => close)
+      .filter((c) => !!c) as DurationWithInitialDate[],
+  );
+
+  console.log("averageTimeToClose", averageTimeToClose);
+
   text = text
     .addHeading("Average duration per month", 3)
     .addEOL()
     .addRaw(
       monthWithMatchToGanttChart(
         "Average time to first review (days)",
-        splitDatesWithAmount(
-          prAverage
-            .map(({ review }) => review)
-            .filter((r) => !!r) as DurationWithInitialDate[],
-        ),
-      ),
-    )
+        averageTimeToFirstReview,
+      ))
     .addEOL()
     .addRaw(
       monthWithMatchToGanttChart(
         "Average time to merge (days)",
-        splitDatesWithAmount(
-          prAverage
-            .map(({ close }) => close)
-            .filter((c) => !!c) as DurationWithInitialDate[],
-        ),
+        averageTimeToClose,
       ),
     )
     .addEOL();

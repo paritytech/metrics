@@ -44,7 +44,7 @@ export const splitDates = (dates: string[]): MonthWithMatch[] => {
   return monthsWithMatches;
 };
 
-export const splitDatesWithAmount = (
+export const getAverageAmountPerMonth = (
   dates: DurationWithInitialDate[],
 ): MonthWithMatch[] => {
   // We first sort all the dates
@@ -53,29 +53,33 @@ export const splitDatesWithAmount = (
   console.log("Sorting dates", dates);
 
   // We get the month of the first date
-  const firstMonth = moment(dates[0].date).format("MMM YYYY");
+  let currentMonthName = moment(dates[0].date).format("MMM YYYY");
   // Using the MMM YYYY without a date converts the date to the beginning of the month
-  let currentMonth = moment(firstMonth);
+  let currentMonth = moment(currentMonthName);
 
   const monthsWithMatches: MonthWithMatch[] = [];
 
-  let currentMonthWithMatch: MonthWithMatch = { month: firstMonth, matches: 1 };
+  let collectionOfTime:number[] = [];
   for (const {date,daysSinceCreation} of dates) {
     // If it happened in the same month
     if (currentMonth.diff(moment(date), "month") == 0) {
-      currentMonthWithMatch.matches += daysSinceCreation;
+      console.log("adding for month %s the value", currentMonthName, daysSinceCreation);
+      collectionOfTime.push(daysSinceCreation);
     } else {
-      // If the new date has more than one month of difference
-      // We change the currentMonth variable to the following one
-      const newMonth = moment(date).format("MMM YYYY");
-      currentMonth = moment(newMonth);
-
-      console.log("New date", newMonth, date);
-
+      // We get the average of time
+      const averageOfTime = Math.floor(collectionOfTime.reduce((a,b) => a + b ,0) / collectionOfTime.length);
       // We push the previous match and reset it
-      monthsWithMatches.push(currentMonthWithMatch);
+      monthsWithMatches.push({month: currentMonthName, matches:averageOfTime });
 
-      currentMonthWithMatch = { month: newMonth, matches: 1 };
+      // We change the currentMonth variable to the following one
+      currentMonthName = moment(date).format("MMM YYYY");
+      currentMonth = moment(currentMonthName);
+
+      // We reset the collection of time with the new value
+      collectionOfTime = [daysSinceCreation];
+
+      console.log("New date", currentMonthName, date);
+
     }
   }
 

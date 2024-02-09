@@ -155,6 +155,6 @@ export const getMetrics = async (
   const averages = await gen.getPullRequestAverages();
   console.log(averages);
 
-  const report = generateSummary(repo, pr, averages, monthMetrics);
+  const report = generateSummary(repo, pr, averages, monthMetrics, logger);
   return report;
 };
