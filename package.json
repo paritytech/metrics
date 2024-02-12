@@ -33,6 +33,7 @@
   },
   "devDependencies": {
     "@eng-automation/js-style": "^2.3.0",
+    "@octokit/graphql-schema": "^14.55.1",
     "@types/jest": "^29.5.5",
     "@vercel/ncc": "^0.38.0",
     "jest": "^29.7.0",

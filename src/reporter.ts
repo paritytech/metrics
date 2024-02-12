@@ -109,26 +109,12 @@ export const generateSummary = (
     .addEOL()
     .addRaw(
       monthWithMatchToGanttChart(
-        "Additions per month",
+        "Lines changed per month",
         getAverageAmountPerMonth(
           prAverage.map((pr) => {
             return {
               date: pr.creation,
-              daysSinceCreation: pr.additions,
-            };
-          }),
-        ),
-      ),
-    )
-    .addEOL()
-    .addRaw(
-      monthWithMatchToGanttChart(
-        "Deletions per month",
-        getAverageAmountPerMonth(
-          prAverage.map((pr) => {
-            return {
-              date: pr.creation,
-              daysSinceCreation: pr.deletions,
+              daysSinceCreation: Math.abs(pr.additions - pr.deletions),
             };
           }),
         ),

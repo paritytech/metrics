@@ -18,3 +18,35 @@ export type PullRequestGet =
   Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}"]["response"]["data"];
 export type IssueCommentList =
   Endpoints["GET /repos/{owner}/{repo}/issues/comments"]["response"]["data"];
+
+ export interface PageInfoQuery {
+    endCursor: string | null;
+    startCursor: string | null;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  }
+  
+ export interface PullRequestNode {
+    title: string;
+    number: number;
+    createdAt: string;
+    mergedAt: string | null;
+    additions: number;
+    reviews: {
+      totalCount: number;
+      nodes: {
+        submittedAt: string;
+        state: "APPROVED" | "COMMENTED" | "CHANGES_REQUESTED";
+        author: { login: string };
+      }[];
+    };
+  }
+  
+  export interface PullRequestListGQL {
+    repository: {
+      pullRequests: {
+        nodes: PullRequestNode[];
+        pageInfo: PageInfoQuery;
+      };
+    };
+  }
