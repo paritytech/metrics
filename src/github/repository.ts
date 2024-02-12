@@ -20,6 +20,7 @@ export const PULL_REQUEST_LIST_QUERY = `
           ... on PullRequest {
             title
             number
+            state
             createdAt
             mergedAt
             additions
@@ -72,8 +73,10 @@ export class RepositoryApi {
     const prs: PullRequestNode[] = [];
     let cursor: string | null = null;
     let hasNextPage: boolean = false;
+    let currentPage: number = 0;
 
     do {
+      this.logger.debug(`Querying page ${currentPage++}`);
       const query: PullRequestListGQL =
         await this.api.graphql<PullRequestListGQL>(PULL_REQUEST_LIST_QUERY, {
           cursor,
@@ -84,6 +87,8 @@ export class RepositoryApi {
       hasNextPage = pageInfo.hasNextPage;
       cursor = pageInfo.endCursor;
     } while (hasNextPage);
+
+    this.logger.info(`Found information for ${prs.length} pull requests`);
 
     return prs;
   }

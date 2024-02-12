@@ -6,6 +6,8 @@ import {
   ActionLogger,
   GitHubClient,
   PullRequestList,
+  PullRequestListGQL,
+  PullRequestNode,
   PullRequestReviewList,
 } from "./github/types";
 import { generateSummary } from "./reporter";
@@ -36,7 +38,7 @@ export interface PullRequestAverage {
 export type MonthWithMatch = { month: string; matches: number };
 
 class ReportGenerator {
-  private prList: PullRequestList | null = null;
+  private prList: PullRequestNode[] | null = null;
   private readonly repoApi: RepositoryApi;
 
   constructor(
@@ -48,53 +50,38 @@ class ReportGenerator {
     this.repoApi = new RepositoryApi(this.api, this.logger, this.repo);
   }
 
-  async getPullRequests(): Promise<PullRequestMetrics> {
-    if (!this.prList) {
-      this.prList = await this.repoApi.getPullRequests();
+  async getPullRequestAverages(): Promise<PullRequestMetrics & {averages:PullRequestAverage[]}> {
+    if(!this.prList){
+      this.prList = await this.repoApi.getPullRequestsGql();
     }
 
-    const openPrs = this.prList.reduce(
-      (count, { state }) => count + (state === "open" ? 1 : 0),
-      0,
-    );
-    const mergedPrs = this.prList.filter(({ merged_at }) => !!merged_at).length;
-    const closedPrs = this.prList.length - openPrs - mergedPrs;
+    console.log("STATES", this.prList.map(({state}) => state));
 
     const prMetric: PullRequestMetrics = {
-      open: openPrs,
-      closed: closedPrs,
-      merged: mergedPrs,
+      open: this.prList.filter(({state}) => state === "OPEN").length,
+      closed: this.prList.filter(({state}) => state === "CLOSED").length,
+      merged: this.prList.filter(({state}) => state === "MERGED").length,
     };
-
-    return prMetric;
-  }
-
-  async getPullRequestAverages(): Promise<PullRequestAverage[]> {
-    if (!this.prList) {
-      this.prList = await this.repoApi.getPullRequests();
-    }
 
     const averages: PullRequestAverage[] = [];
 
-    // for (const pr of this.prList.reverse().slice(0, 25)) {
-    for (const pr of this.prList.reverse()) {
-      const creation = moment(pr.created_at);
-      const data = await this.repoApi.getPullRequestInfo(pr.number);
+    for (const pr of this.prList) {
+      const creation = moment(pr.createdAt);
 
-      const firstReview = data.firstReview?.submitted_at ?? null;
+      const firstReview = (pr.reviews.nodes.length > 0) ? pr.reviews.nodes[0].submittedAt : null;
       const timeToFirstReview =
         firstReview != null ? moment(firstReview).diff(creation, "days") : null;
       const timeToClose =
-        pr.merged_at != null
-          ? moment(pr.merged_at).diff(creation, "days")
+        pr.mergedAt != null
+          ? moment(pr.mergedAt).diff(creation, "days")
           : null;
       averages.push({
         number: pr.number,
         timeToClose,
         timeToFirstReview,
-        creation: pr.created_at,
+        creation: pr.createdAt,
         close: timeToClose
-          ? { date: pr.merged_at as string, daysSinceCreation: timeToClose }
+          ? { date: pr.mergedAt as string, daysSinceCreation: timeToClose }
           : undefined,
         review: timeToFirstReview
           ? {
@@ -102,26 +89,27 @@ class ReportGenerator {
               daysSinceCreation: timeToFirstReview,
             }
           : undefined,
-        additions: data.additions,
-        deletions: data.deletions,
+        additions: pr.additions,
+        deletions: pr.deletions,
       });
     }
 
-    return averages;
+    return {...prMetric,averages};
   }
 
   async getPullRequestMetricsPerMonth(): Promise<{
     opened: MonthWithMatch[];
     closed: MonthWithMatch[];
   }> {
-    if (!this.prList) {
-      this.prList = await this.repoApi.getPullRequests();
+
+    if(!this.prList){
+      this.prList = await this.repoApi.getPullRequestsGql();
     }
 
-    const creations = this.prList.map(({ created_at }) => created_at);
+    const creations = this.prList.map(({ createdAt }) => createdAt);
     const closeDates = this.prList
-      .filter((pr) => pr.merged_at)
-      .map(({ merged_at }) => merged_at as string);
+      .filter((pr) => pr.mergedAt)
+      .map(({ mergedAt }) => mergedAt as string);
 
     const opened = splitDates(creations);
     const closed = splitDates(closeDates);
@@ -153,11 +141,10 @@ export const getMetrics = async (
   repo: { owner: string; repo: string },
 ): Promise<typeof summary> => {
   const gen = new ReportGenerator(api, logger, repo);
+
+  const prWithAverage = await gen.getPullRequestAverages();
+  console.log("averages", {open:prWithAverage.open, closed:prWithAverage.closed, merged:prWithAverage.merged});
   const monthMetrics = await gen.getPullRequestMetricsPerMonth();
-  const pr = await gen.getPullRequests();
 
-  const averages = await gen.getPullRequestAverages();
-  console.log(averages);
-
-  return generateSummary(repo, pr, averages, monthMetrics, logger);
+  return generateSummary(repo, prWithAverage, prWithAverage.averages, monthMetrics, logger);
 };

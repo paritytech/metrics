@@ -30,8 +30,10 @@ export type IssueCommentList =
     title: string;
     number: number;
     createdAt: string;
+    state: "OPEN"|"CLOSED"|"MERGED";
     mergedAt: string | null;
     additions: number;
+    deletions: number;
     reviews: {
       totalCount: number;
       nodes: {
