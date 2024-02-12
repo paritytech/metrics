@@ -11,7 +11,7 @@ export function generateCoreLogger(): ActionLogger {
 export const splitDates = (dates: string[]): MonthWithMatch[] => {
   // We first sort all the dates
   dates.sort();
-  
+
   console.log("splitDates dates sorted", dates);
 
   // We get the month of the first date
@@ -59,17 +59,24 @@ export const getAverageAmountPerMonth = (
 
   const monthsWithMatches: MonthWithMatch[] = [];
 
-  let collectionOfTime:number[] = [];
-  for (const {date,daysSinceCreation} of dates) {
+  let collectionOfTime: number[] = [];
+  for (const { date, daysSinceCreation } of dates) {
     // If it happened in the same month
     if (currentMonth.diff(moment(date), "month") == 0) {
-      console.log("adding for month %s the value", currentMonthName, daysSinceCreation);
+      console.log(
+        "adding for month %s the value",
+        currentMonthName,
+        daysSinceCreation,
+      );
       collectionOfTime.push(daysSinceCreation);
     } else {
       // We get the average of time
-      const averageOfTime = Math.floor(collectionOfTime.reduce((a,b) => a + b ,0) / collectionOfTime.length);
+      const averageOfTime = calculateAverage(collectionOfTime);
       // We push the previous match and reset it
-      monthsWithMatches.push({month: currentMonthName, matches:averageOfTime });
+      monthsWithMatches.push({
+        month: currentMonthName,
+        matches: averageOfTime,
+      });
 
       // We change the currentMonth variable to the following one
       currentMonthName = moment(date).format("MMM YYYY");
@@ -79,9 +86,12 @@ export const getAverageAmountPerMonth = (
       collectionOfTime = [daysSinceCreation];
 
       console.log("New date", currentMonthName, date);
-
     }
   }
 
   return monthsWithMatches;
 };
+
+/** Calculates the round number average over an array of numbers */
+export const calculateAverage = (values: number[]): number =>
+  Math.round(values.reduce((a, t) => a + t, 0) / values.length);

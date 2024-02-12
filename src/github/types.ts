@@ -14,3 +14,7 @@ export type PullRequestList =
   Endpoints["GET /repos/{owner}/{repo}/pulls"]["response"]["data"];
 export type PullRequestReviewList =
   Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}/reviews"]["response"]["data"];
+export type PullRequestGet =
+  Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}"]["response"]["data"];
+export type IssueCommentList =
+  Endpoints["GET /repos/{owner}/{repo}/issues/comments"]["response"]["data"];

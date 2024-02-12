@@ -1,6 +1,8 @@
 import {
   ActionLogger,
   GitHubClient,
+  IssueCommentList,
+  PullRequestGet,
   PullRequestList,
   PullRequestReviewList,
 } from "./types";
@@ -27,22 +29,20 @@ export class RepositoryApi {
 
   async getPullRequestInfo(
     number: number,
-  ): Promise<PullRequestReviewList[number] | null> {
+  ): Promise<PullRequestGet & { firstReview?: PullRequestReviewList[number] }> {
     this.logger.info(
       `Fetching data from ${this.repo.owner}/${this.repo.repo}#${number}`,
     );
 
-    const reviews = await this.api.rest.pulls.listReviews({
-      ...this.repo,
-      pull_number: number,
-      per_page: 1,
-    });
+    const pr = await this.api.rest.pulls.get({ ...this.repo, pull_number: number });
+
+    const reviews = await this.api.rest.pulls.listReviews({ ...this.repo, pull_number: number, per_page: 1 });
     if (reviews.data.length > 0) {
       const [firstReview] = reviews.data;
       this.logger.debug(JSON.stringify(firstReview));
-      return firstReview;
+      return { ...pr.data, firstReview };
     } else {
-      return null;
+      return pr.data;
     }
   }
 }

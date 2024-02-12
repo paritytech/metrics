@@ -6,7 +6,7 @@ import {
   PullRequestAverage,
   PullRequestMetrics,
 } from "./analytics";
-import { getAverageAmountPerMonth } from "./util";
+import { getAverageAmountPerMonth, calculateAverage } from "./util";
 import { ActionLogger } from "./github/types";
 
 export const generateSummary = (
@@ -38,14 +38,10 @@ export const generateSummary = (
     .map(({ timeToClose }) => timeToClose as number);
 
   const average: Omit<PullRequestAverage, "number"> = {
-    timeToClose: Math.round(
-      filteredTimeToClose.reduce((a, t) => a + t, 0) /
-      filteredTimeToClose.length,
-    ),
-    timeToFirstReview: Math.round(
-      filteredTimeToFirstReview.reduce((a, t) => a + t, 0) /
-      filteredTimeToFirstReview.length,
-    ),
+    timeToClose: calculateAverage(filteredTimeToClose),
+    timeToFirstReview: calculateAverage(filteredTimeToFirstReview),
+    additions: calculateAverage(prAverage.map(({additions}) => additions)),
+    deletions: calculateAverage(prAverage.map(({deletions}) => deletions))
   };
 
   const averageReviews = `\`\`\`mermaid
@@ -57,6 +53,10 @@ export const generateSummary = (
         ${average.timeToClose} : 0, ${average.timeToClose}
         section Time to first review
         ${average.timeToFirstReview} : 0, ${average.timeToFirstReview}
+        section Additions
+        ${average.additions} : 0, ${average.additions}
+        section Deletions
+        ${average.deletions}
   \`\`\``;
 
   text = text

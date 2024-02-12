@@ -28,6 +28,8 @@ export interface PullRequestAverage {
   review?: DurationWithInitialDate;
   timeToClose: number | null;
   timeToFirstReview: number | null;
+  additions:number;
+  deletions:number;
 }
 
 export type MonthWithMatch = { month: string; matches: number };
@@ -76,13 +78,11 @@ class ReportGenerator {
     // for (const pr of this.prList.reverse().slice(0, 25)) {
     for (const pr of this.prList.reverse()) {
       const creation = moment(pr.created_at);
-      const review = await this.repoApi.getPullRequestInfo(pr.number);
+      const data = await this.repoApi.getPullRequestInfo(pr.number);
 
-      const firstReview = review?.submitted_at ?? null;
+      const firstReview = data.firstReview?.submitted_at ?? null;
       const timeToFirstReview =
-        firstReview != null
-          ? moment(firstReview).diff(creation, "days")
-          : null;
+        firstReview != null ? moment(firstReview).diff(creation, "days") : null;
       const timeToClose =
         pr.merged_at != null
           ? moment(pr.merged_at).diff(creation, "days")
@@ -96,10 +96,12 @@ class ReportGenerator {
           : undefined,
         review: timeToFirstReview
           ? {
-              date: firstReview as string,
-              daysSinceCreation: timeToFirstReview,
-            }
+            date: firstReview as string,
+            daysSinceCreation: timeToFirstReview,
+          }
           : undefined,
+          additions: data.additions,
+          deletions: data.deletions
       });
     }
 
