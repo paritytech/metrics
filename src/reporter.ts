@@ -6,15 +6,15 @@ import {
   PullRequestAverage,
   PullRequestMetrics,
 } from "./analytics";
-import { getAverageAmountPerMonth, calculateAverage } from "./util";
 import { ActionLogger } from "./github/types";
+import { calculateAverage, getAverageAmountPerMonth } from "./util";
 
 export const generateSummary = (
   repo: { owner: string; repo: string },
   metrics: PullRequestMetrics,
   prAverage: PullRequestAverage[],
   monthMetrics: { opened: MonthWithMatch[]; closed: MonthWithMatch[] },
-  logger: ActionLogger
+  logger: ActionLogger,
 ): typeof summary => {
   const prChart = `\`\`\`mermaid
   pie title Pull Requests for the repository
@@ -40,8 +40,9 @@ export const generateSummary = (
   const average: Omit<PullRequestAverage, "number"> = {
     timeToClose: calculateAverage(filteredTimeToClose),
     timeToFirstReview: calculateAverage(filteredTimeToFirstReview),
-    additions: calculateAverage(prAverage.map(({additions}) => additions)),
-    deletions: calculateAverage(prAverage.map(({deletions}) => deletions))
+    additions: calculateAverage(prAverage.map(({ additions }) => additions)),
+    deletions: calculateAverage(prAverage.map(({ deletions }) => deletions)),
+    creation: "",
   };
 
   const averageReviews = `\`\`\`mermaid
@@ -53,10 +54,6 @@ export const generateSummary = (
         ${average.timeToClose} : 0, ${average.timeToClose}
         section Time to first review
         ${average.timeToFirstReview} : 0, ${average.timeToFirstReview}
-        section Additions
-        ${average.additions} : 0, ${average.additions}
-        section Deletions
-        ${average.deletions}
   \`\`\``;
 
   text = text
@@ -88,7 +85,8 @@ export const generateSummary = (
       monthWithMatchToGanttChart(
         "Average time to first review (days)",
         averageTimeToFirstReview,
-      ))
+      ),
+    )
     .addEOL()
     .addRaw(
       monthWithMatchToGanttChart(
@@ -107,6 +105,34 @@ export const generateSummary = (
     .addEOL()
     .addRaw(
       monthWithMatchToGanttChart("Merged PRs per month", monthMetrics.closed),
+    )
+    .addEOL()
+    .addRaw(
+      monthWithMatchToGanttChart(
+        "Additions per month",
+        getAverageAmountPerMonth(
+          prAverage.map((pr) => {
+            return {
+              date: pr.creation,
+              daysSinceCreation: pr.additions,
+            };
+          }),
+        ),
+      ),
+    )
+    .addEOL()
+    .addRaw(
+      monthWithMatchToGanttChart(
+        "Deletions per month",
+        getAverageAmountPerMonth(
+          prAverage.map((pr) => {
+            return {
+              date: pr.creation,
+              daysSinceCreation: pr.deletions,
+            };
+          }),
+        ),
+      ),
     )
     .addEOL();
 

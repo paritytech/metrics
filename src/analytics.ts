@@ -1,3 +1,4 @@
+import { summary } from "@actions/core";
 import moment from "moment";
 
 import { RepositoryApi } from "./github/repository";
@@ -9,7 +10,6 @@ import {
 } from "./github/types";
 import { generateSummary } from "./reporter";
 import { splitDates } from "./util";
-import { summary } from "@actions/core";
 
 export interface PullRequestMetrics {
   open: number;
@@ -24,12 +24,13 @@ export type DurationWithInitialDate = {
 
 export interface PullRequestAverage {
   number: number;
+  creation:string
   close?: DurationWithInitialDate;
   review?: DurationWithInitialDate;
   timeToClose: number | null;
   timeToFirstReview: number | null;
-  additions:number;
-  deletions:number;
+  additions: number;
+  deletions: number;
 }
 
 export type MonthWithMatch = { month: string; matches: number };
@@ -91,17 +92,18 @@ class ReportGenerator {
         number: pr.number,
         timeToClose,
         timeToFirstReview,
+        creation: pr.created_at,
         close: timeToClose
           ? { date: pr.merged_at as string, daysSinceCreation: timeToClose }
           : undefined,
         review: timeToFirstReview
           ? {
-            date: firstReview as string,
-            daysSinceCreation: timeToFirstReview,
-          }
+              date: firstReview as string,
+              daysSinceCreation: timeToFirstReview,
+            }
           : undefined,
-          additions: data.additions,
-          deletions: data.deletions
+        additions: data.additions,
+        deletions: data.deletions,
       });
     }
 
@@ -157,6 +159,5 @@ export const getMetrics = async (
   const averages = await gen.getPullRequestAverages();
   console.log(averages);
 
-  const report = generateSummary(repo, pr, averages, monthMetrics, logger);
-  return report;
+  return generateSummary(repo, pr, averages, monthMetrics, logger);
 };

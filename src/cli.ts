@@ -2,11 +2,10 @@ import "dotenv/config";
 import { getOctokit } from "@actions/github";
 import chalk from "chalk";
 import { envsafe, str } from "envsafe";
+import { writeFile } from "fs/promises";
 
-import { RepositoryApi } from "./github/repository";
-import { ActionLogger } from "./github/types";
 import { getMetrics } from "./analytics";
-import {writeFile} from "fs/promises"
+import { ActionLogger } from "./github/types";
 
 const env = envsafe({
   OWNER: str({
