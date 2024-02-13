@@ -50,6 +50,7 @@ export class PullRequestAnalytics {
   generateMonthlyMetrics(
     prList: PullRequestInfo[],
   ): PullRequestMetrics["monthlyMetrics"] {
+    this.logger.debug("Calculating monthly metrics");
     const creation = calculateEventsPerMonth(prList.map((pr) => pr.creation));
     const reviews = extractMatchesFromDate(
       prList
@@ -75,6 +76,7 @@ export class PullRequestAnalytics {
   generateMonthlyAverages(
     prs: PullRequestInfo[],
   ): PullRequestMetrics["monthlyAverages"] {
+    this.logger.debug("Calculating monthly averages");
     const averageTimeToFirstReview = calculateAveragePerMonth(
       prs
         .map(({ review }) => review)

@@ -24,9 +24,7 @@ export const extractMatchesFromDate = <T extends { date: string }>(
   dates.sort((a, b) => (a.date > b.date ? 1 : -1));
 
   // We get the month of the first date
-  let currentMonthName = moment(dates[0].date).format("MMM YYYY");
-  // Using the MMM YYYY without a date converts the date to the beginning of the month
-  let currentMonth = moment(currentMonthName);
+  let currentMonth = moment(dates[0].date).startOf("month");
 
   const monthsWithMatches: MonthWithMatch[] = [];
 
@@ -47,11 +45,10 @@ export const extractMatchesFromDate = <T extends { date: string }>(
         matches = currentMonthValues.reduce((a, b) => a + b, 0);
       }
       // We push the previous match and reset it
-      monthsWithMatches.push([currentMonthName, matches]);
+      monthsWithMatches.push([currentMonth.format("MMM YYYY"), matches]);
 
       // We change the currentMonth variable to the following one
-      currentMonthName = moment(dateObj.date).format("MMM YYYY");
-      currentMonth = moment(currentMonthName);
+      currentMonth = moment(dateObj.date).startOf("month");
 
       // We reset the collection of time with the new value
       currentMonthValues = [amountToAdd];
