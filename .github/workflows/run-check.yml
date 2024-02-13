@@ -22,8 +22,8 @@ jobs:
           repo: RFCs
     
       - uses: paritytech/metrics@pull/stadistics
-        name: Fetch paritytech/polkadot-sdk stadistics
+        name: Fetch paritytech/opstooling stadistics
         with:
           GITHUB_TOKEN: ${{ secrets.PAT }}
           owner: paritytech
-          repo: polkadot-sdk
+          repo: metrics
