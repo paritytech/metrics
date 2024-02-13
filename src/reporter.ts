@@ -1,24 +1,12 @@
 import { summary } from "@actions/core";
-
+import { PullRequestMetrics } from "./report/types";
 import {
-  DurationWithInitialDate,
-  MonthWithMatch,
-  PullRequestAverage,
-  PullRequestMetrics,
-} from "./analytics";
-import { ActionLogger } from "./github/types";
-import {
-  calculateAverage,
-  calculateAveragePerMonth,
-  extractMatchesFromDate,
+  calculateAverage
 } from "./util";
 
 export const generateSummary = (
   repo: { owner: string; repo: string },
   metrics: PullRequestMetrics,
-  prAverage: PullRequestAverage[],
-  monthMetrics: { opened: MonthWithMatch[]; closed: MonthWithMatch[] },
-  logger: ActionLogger,
 ): typeof summary => {
   const prChart = `\`\`\`mermaid
   pie title Pull Requests for the repository
@@ -34,21 +22,9 @@ export const generateSummary = (
     .addRaw(prChart)
     .addEOL();
 
-  const filteredTimeToFirstReview = prAverage
-    .filter(({ timeToFirstReview }) => !!timeToFirstReview)
-    .map(({ timeToFirstReview }) => timeToFirstReview as number);
-  const filteredTimeToClose = prAverage
-    .filter(({ timeToClose }) => !!timeToClose)
-    .map(({ timeToClose }) => timeToClose as number);
-
-  const average: Omit<PullRequestAverage, "number"> = {
-    timeToClose: calculateAverage(filteredTimeToClose),
-    timeToFirstReview: calculateAverage(filteredTimeToFirstReview),
-    additions: calculateAverage(prAverage.map(({ additions }) => additions)),
-    deletions: calculateAverage(prAverage.map(({ deletions }) => deletions)),
-    creation: "",
-    reviews: calculateAverage(prAverage.map(({ reviews }) => reviews)),
-  };
+  const totalAverageTimeToClose = calculateAverage(metrics.monthlyAverages.mergeTime.map(([_,average]) => average));
+  const totalAverageTimeToFirstReview = calculateAverage(metrics.monthlyAverages.timeToFirstReview.map(([_,average]) => average));
+  const totalAverageReviews = calculateAverage(metrics.monthlyAverages.reviews.map(([_,average])=>average));
 
   const averageReviews = `\`\`\`mermaid
     gantt
@@ -56,11 +32,11 @@ export const generateSummary = (
         dateFormat  X
         axisFormat %s
         section Time to close
-        ${average.timeToClose} : 0, ${average.timeToClose}
+        ${totalAverageTimeToClose} : 0, ${totalAverageTimeToClose}
         section Time to first review
-        ${average.timeToFirstReview} : 0, ${average.timeToFirstReview}
+        ${totalAverageTimeToFirstReview} : 0, ${totalAverageTimeToFirstReview}
         section Average reviews
-        ${average.reviews} : 0, ${average.reviews}
+        ${totalAverageReviews} : 0, ${totalAverageReviews}
   \`\`\``;
 
   text = text
@@ -69,50 +45,27 @@ export const generateSummary = (
     .addRaw(averageReviews)
     .addEOL();
 
-  const averageTimeToFirstReview = calculateAveragePerMonth(
-    prAverage
-      .map(({ review }) => review)
-      .filter((r) => !!r) as DurationWithInitialDate[],
-    (value) => value.daysSinceCreation,
-  );
-
-  console.log("averageTimeToFirstReview", averageTimeToFirstReview);
-
-  const averageTimeToClose = calculateAveragePerMonth(
-    prAverage
-      .map(({ close }) => close)
-      .filter((c) => !!c) as DurationWithInitialDate[],
-    (value) => value.daysSinceCreation,
-  );
-
-  console.log("averageTimeToClose", averageTimeToClose);
-
   text = text
     .addHeading("Average duration per month", 3)
     .addEOL()
     .addRaw(
       monthWithMatchToGanttChart(
         "Average time to first review (days)",
-        averageTimeToFirstReview,
+        metrics.monthlyAverages.timeToFirstReview,
       ),
     )
     .addEOL()
     .addRaw(
       monthWithMatchToGanttChart(
         "Average time to merge (days)",
-        averageTimeToClose,
+        metrics.monthlyAverages.mergeTime,
       ),
     )
     .addEOL()
     .addRaw(
       monthWithMatchToGanttChart(
         "Average reviews per PR per month",
-        calculateAveragePerMonth(
-          prAverage.map((pr) => {
-            return { date: pr.creation, reviews: pr.reviews };
-          }),
-          (value) => value.reviews,
-        ),
+        metrics.monthlyAverages.reviews
       ),
     )
     .addEOL();
@@ -121,43 +74,24 @@ export const generateSummary = (
     .addHeading("Metrics over time", 3)
     .addEOL()
     .addRaw(
-      monthWithMatchToGanttChart("New PRs per month", monthMetrics.opened),
+      monthWithMatchToGanttChart("New PRs per month", metrics.monthlyMetrics.creation),
     )
     .addEOL()
     .addRaw(
-      monthWithMatchToGanttChart("Merged PRs per month", monthMetrics.closed),
+      monthWithMatchToGanttChart("Merged PRs per month", metrics.monthlyMetrics.closed),
     )
     .addEOL()
     .addRaw(
       monthWithMatchToGanttChart(
         "Lines changed per month",
-        calculateAveragePerMonth(
-          prAverage.map((pr) => {
-            return {
-              date: pr.creation,
-              daysSinceCreation: Math.abs(pr.additions - pr.deletions),
-            };
-          }),
-          (value) => value.daysSinceCreation,
-        ),
+        metrics.monthlyAverages.linesChanged
       ),
     )
     .addEOL()
     .addRaw(
       monthWithMatchToGanttChart(
         "Reviews per month",
-        extractMatchesFromDate(
-          prAverage
-            .filter((pr) => !!pr.review)
-            .map((pr) => {
-              return {
-                date: pr.review?.date as string,
-                reviews: pr.reviews,
-              };
-            }),
-          (pr) => pr.reviews,
-          false,
-        ),
+        metrics.monthlyMetrics.reviews
       ),
     )
     .addEOL();
@@ -167,7 +101,7 @@ export const generateSummary = (
 
 const monthWithMatchToGanttChart = (
   title: string,
-  months: MonthWithMatch[],
+  months: [string,number][],
 ): string => `\`\`\`mermaid
 gantt
   title ${title}
@@ -175,7 +109,7 @@ gantt
   axisFormat %s
   ${months
     .map(
-      ({ month, matches }) =>
+      ([ month, matches ]) =>
         `section ${month}\n    ${matches} : 0, ${matches}`,
     )
     .join("\n    ")}

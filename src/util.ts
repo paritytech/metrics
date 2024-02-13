@@ -1,8 +1,8 @@
 import { debug, error, info, warning } from "@actions/core";
 import moment from "moment";
 
-import { MonthWithMatch } from "./analytics";
 import { ActionLogger } from "./github/types";
+import { MonthWithMatch } from "./report/types";
 
 export function generateCoreLogger(): ActionLogger {
   return { info, debug, warn: warning, error };
@@ -23,8 +23,6 @@ export const extractMatchesFromDate = <T extends { date: string }>(
 ): MonthWithMatch[] => {
   dates.sort((a, b) => (a.date > b.date ? 1 : -1));
 
-  console.log("split dates by order");
-
   // We get the month of the first date
   let currentMonthName = moment(dates[0].date).format("MMM YYYY");
   // Using the MMM YYYY without a date converts the date to the beginning of the month
@@ -37,11 +35,6 @@ export const extractMatchesFromDate = <T extends { date: string }>(
     const amountToAdd = getAmount(dateObj);
     // If it happened in the same month
     if (currentMonth.diff(moment(dateObj.date), "month") == 0) {
-      console.log(
-        "adding for month %s the value",
-        currentMonthName,
-        amountToAdd,
-      );
       currentMonthValues.push(amountToAdd);
     } else {
       let matches: number;
@@ -54,10 +47,10 @@ export const extractMatchesFromDate = <T extends { date: string }>(
         matches = currentMonthValues.reduce((a, b) => a + b, 0);
       }
       // We push the previous match and reset it
-      monthsWithMatches.push({
-        month: currentMonthName,
+      monthsWithMatches.push([
+        currentMonthName,
         matches,
-      });
+      ]);
 
       // We change the currentMonth variable to the following one
       currentMonthName = moment(dateObj.date).format("MMM YYYY");
@@ -65,8 +58,6 @@ export const extractMatchesFromDate = <T extends { date: string }>(
 
       // We reset the collection of time with the new value
       currentMonthValues = [amountToAdd];
-
-      console.log("New date", currentMonthName, dateObj.date);
     }
   }
 

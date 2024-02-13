@@ -47,6 +47,7 @@ export type IssueCommentList =
   export interface PullRequestListGQL {
     repository: {
       pullRequests: {
+        totalCount: number;
         nodes: PullRequestNode[];
         pageInfo: PageInfoQuery;
       };
