@@ -7,7 +7,11 @@ import {
   PullRequestMetrics,
 } from "./analytics";
 import { ActionLogger } from "./github/types";
-import { calculateAverage, getAverageAmountPerMonth } from "./util";
+import {
+  calculateAverage,
+  calculateAveragePerMonth,
+  extractMatchesFromDate,
+} from "./util";
 
 export const generateSummary = (
   repo: { owner: string; repo: string },
@@ -43,6 +47,7 @@ export const generateSummary = (
     additions: calculateAverage(prAverage.map(({ additions }) => additions)),
     deletions: calculateAverage(prAverage.map(({ deletions }) => deletions)),
     creation: "",
+    reviews: calculateAverage(prAverage.map(({ reviews }) => reviews)),
   };
 
   const averageReviews = `\`\`\`mermaid
@@ -54,6 +59,8 @@ export const generateSummary = (
         ${average.timeToClose} : 0, ${average.timeToClose}
         section Time to first review
         ${average.timeToFirstReview} : 0, ${average.timeToFirstReview}
+        section Average reviews
+        ${average.reviews} : 0, ${average.reviews}
   \`\`\``;
 
   text = text
@@ -62,18 +69,20 @@ export const generateSummary = (
     .addRaw(averageReviews)
     .addEOL();
 
-  const averageTimeToFirstReview = getAverageAmountPerMonth(
+  const averageTimeToFirstReview = calculateAveragePerMonth(
     prAverage
       .map(({ review }) => review)
       .filter((r) => !!r) as DurationWithInitialDate[],
+    (value) => value.daysSinceCreation,
   );
 
   console.log("averageTimeToFirstReview", averageTimeToFirstReview);
 
-  const averageTimeToClose = getAverageAmountPerMonth(
+  const averageTimeToClose = calculateAveragePerMonth(
     prAverage
       .map(({ close }) => close)
       .filter((c) => !!c) as DurationWithInitialDate[],
+    (value) => value.daysSinceCreation,
   );
 
   console.log("averageTimeToClose", averageTimeToClose);
@@ -94,6 +103,18 @@ export const generateSummary = (
         averageTimeToClose,
       ),
     )
+    .addEOL()
+    .addRaw(
+      monthWithMatchToGanttChart(
+        "Average reviews per PR per month",
+        calculateAveragePerMonth(
+          prAverage.map((pr) => {
+            return { date: pr.creation, reviews: pr.reviews };
+          }),
+          (value) => value.reviews,
+        ),
+      ),
+    )
     .addEOL();
 
   text = text
@@ -110,13 +131,32 @@ export const generateSummary = (
     .addRaw(
       monthWithMatchToGanttChart(
         "Lines changed per month",
-        getAverageAmountPerMonth(
+        calculateAveragePerMonth(
           prAverage.map((pr) => {
             return {
               date: pr.creation,
               daysSinceCreation: Math.abs(pr.additions - pr.deletions),
             };
           }),
+          (value) => value.daysSinceCreation,
+        ),
+      ),
+    )
+    .addEOL()
+    .addRaw(
+      monthWithMatchToGanttChart(
+        "Reviews per month",
+        extractMatchesFromDate(
+          prAverage
+            .filter((pr) => !!pr.review)
+            .map((pr) => {
+              return {
+                date: pr.review?.date as string,
+                reviews: pr.reviews,
+              };
+            }),
+          (pr) => pr.reviews,
+          false,
         ),
       ),
     )

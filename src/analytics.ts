@@ -5,13 +5,11 @@ import { RepositoryApi } from "./github/repository";
 import {
   ActionLogger,
   GitHubClient,
-  PullRequestList,
-  PullRequestListGQL,
   PullRequestNode,
-  PullRequestReviewList,
+  PullRequestReviewList
 } from "./github/types";
 import { generateSummary } from "./reporter";
-import { splitDates } from "./util";
+import { calculateEventsPerMonth } from "./util";
 
 export interface PullRequestMetrics {
   open: number;
@@ -26,7 +24,8 @@ export type DurationWithInitialDate = {
 
 export interface PullRequestAverage {
   number: number;
-  creation:string
+  creation:string;
+  reviews:number;
   close?: DurationWithInitialDate;
   review?: DurationWithInitialDate;
   timeToClose: number | null;
@@ -91,6 +90,7 @@ class ReportGenerator {
           : undefined,
         additions: pr.additions,
         deletions: pr.deletions,
+        reviews: pr.reviews.totalCount
       });
     }
 
@@ -111,8 +111,8 @@ class ReportGenerator {
       .filter((pr) => pr.mergedAt)
       .map(({ mergedAt }) => mergedAt as string);
 
-    const opened = splitDates(creations);
-    const closed = splitDates(closeDates);
+    const opened = calculateEventsPerMonth(creations);
+    const closed = calculateEventsPerMonth(closeDates);
 
     return { opened, closed };
   }
