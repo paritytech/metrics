@@ -10,7 +10,9 @@
     "test": "jest",
     "fix": "eslint --fix 'src/**/*'",
     "lint": "eslint 'src/**/*'",
-    "postinstall": "node scripts/schemas.js"
+    "copy-schema":"node scripts/schemas.js",
+    "postinstall": "yarn run copy-schema",
+    "prebuild": "yarn run copy-schema"
   },
   "repository": {
     "type": "git",

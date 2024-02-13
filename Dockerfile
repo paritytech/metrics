@@ -4,7 +4,7 @@ WORKDIR /action
 
 COPY package.json yarn.lock ./
 
-RUN yarn install --frozen-lockfile
+RUN yarn install --frozen-lockfile --ignore-scripts
 
 COPY . .
 
