@@ -8,21 +8,21 @@ jobs:
     name: Get repository metrics
     steps:
       - uses: paritytech/metrics@pull/stadistics
-        name: Fetch polkadot-fellows/runtimes stadistics
+        name: Fetch polkadot-fellows/runtimes metrics
         with:
           GITHUB_TOKEN: ${{ secrets.PAT }}
           owner: polkadot-fellows
           repo: runtimes
     
       - uses: paritytech/metrics@pull/stadistics
-        name: Fetch polkadot-fellows/RFCs 
+        name: Fetch polkadot-fellows/RFCs metrics
         with:
           GITHUB_TOKEN: ${{ secrets.PAT }}
           owner: polkadot-fellows
           repo: RFCs
     
       - uses: paritytech/metrics@pull/stadistics
-        name: Fetch paritytech/opstooling stadistics
+        name: Fetch paritytech/opstooling metrics
         with:
           GITHUB_TOKEN: ${{ secrets.PAT }}
           owner: paritytech
