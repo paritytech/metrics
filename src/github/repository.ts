@@ -1,3 +1,4 @@
+import PULL_REQUEST_LIST_QUERY from "./PullRequestList";
 import {
   ActionLogger,
   GitHubClient,
@@ -7,47 +8,6 @@ import {
   PullRequestNode,
   PullRequestReviewList,
 } from "./types";
-
-export const PULL_REQUEST_LIST_QUERY = `
-  query PullRequests($cursor: String, $owner: String!, $repo: String!) {
-    repository(owner: $owner, name: $repo) {
-      pullRequests(
-        first: 100
-        orderBy: {field: UPDATED_AT, direction: ASC}
-        after: $cursor
-      ) {
-        nodes {
-          ... on PullRequest {
-            title
-            number
-            state
-            createdAt
-            mergedAt
-            additions
-            deletions
-            reviews(first: 100) {
-              totalCount
-              nodes {
-                ... on PullRequestReview {
-                  submittedAt
-                  state
-                  author {
-                    login
-                  }
-                }
-              }
-            }
-          }
-        }
-        pageInfo {
-          endCursor
-          startCursor
-          hasNextPage
-          hasPreviousPage
-        }
-      }
-    }
-  }`;
 
 /** API class that uses the default token to access the data from the pull request and the repository */
 export class RepositoryApi {

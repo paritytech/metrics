@@ -9,7 +9,8 @@
     "cli": "ncc build src/cli.ts -o .cli && node .cli",
     "test": "jest",
     "fix": "eslint --fix 'src/**/*'",
-    "lint": "eslint 'src/**/*'"
+    "lint": "eslint 'src/**/*'",
+    "postinstall": "node scripts/schemas.js"
   },
   "repository": {
     "type": "git",

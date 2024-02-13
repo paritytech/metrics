@@ -13,3 +13,6 @@
 
 .env
 report.md
+
+# GraphQL files
+src/github/PullRequestList.ts
