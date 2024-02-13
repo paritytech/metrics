@@ -12,7 +12,7 @@ export function generateCoreLogger(): ActionLogger {
  * Extract the matches calculated from a date
  * @param dates An object that extends { date: string } with it's own custom value
  * @param getAmount The method to extract such custom value from the object to add to the metrics
- * @param returnAverage True if the result should be the average for the metrics for a month, 
+ * @param returnAverage True if the result should be the average for the metrics for a month,
  * false if it must be the accumulation
  * @returns Returns an array of objects of type {month: "MM YY", matches: number}
  */
@@ -47,10 +47,7 @@ export const extractMatchesFromDate = <T extends { date: string }>(
         matches = currentMonthValues.reduce((a, b) => a + b, 0);
       }
       // We push the previous match and reset it
-      monthsWithMatches.push([
-        currentMonthName,
-        matches,
-      ]);
+      monthsWithMatches.push([currentMonthName, matches]);
 
       // We change the currentMonth variable to the following one
       currentMonthName = moment(dateObj.date).format("MMM YYYY");

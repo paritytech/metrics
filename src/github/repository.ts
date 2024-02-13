@@ -2,11 +2,8 @@ import PULL_REQUEST_LIST_QUERY from "./PullRequestList";
 import {
   ActionLogger,
   GitHubClient,
-  PullRequestGet,
-  PullRequestList,
   PullRequestListGQL,
   PullRequestNode,
-  PullRequestReviewList,
 } from "./types";
 
 /** API class that uses the default token to access the data from the pull request and the repository */

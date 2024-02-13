@@ -1,8 +1,7 @@
 import { summary } from "@actions/core";
+
 import { PullRequestMetrics } from "./report/types";
-import {
-  calculateAverage
-} from "./util";
+import { calculateAverage } from "./util";
 
 export const generateSummary = (
   repo: { owner: string; repo: string },
@@ -22,9 +21,15 @@ export const generateSummary = (
     .addRaw(prChart)
     .addEOL();
 
-  const totalAverageTimeToClose = calculateAverage(metrics.monthlyAverages.mergeTime.map(([_,average]) => average));
-  const totalAverageTimeToFirstReview = calculateAverage(metrics.monthlyAverages.timeToFirstReview.map(([_,average]) => average));
-  const totalAverageReviews = calculateAverage(metrics.monthlyAverages.reviews.map(([_,average])=>average));
+  const totalAverageTimeToClose = calculateAverage(
+    metrics.monthlyAverages.mergeTime.map(([_, average]) => average),
+  );
+  const totalAverageTimeToFirstReview = calculateAverage(
+    metrics.monthlyAverages.timeToFirstReview.map(([_, average]) => average),
+  );
+  const totalAverageReviews = calculateAverage(
+    metrics.monthlyAverages.reviews.map(([_, average]) => average),
+  );
 
   const averageReviews = `\`\`\`mermaid
     gantt
@@ -65,7 +70,7 @@ export const generateSummary = (
     .addRaw(
       monthWithMatchToGanttChart(
         "Average reviews per PR per month",
-        metrics.monthlyAverages.reviews
+        metrics.monthlyAverages.reviews,
       ),
     )
     .addEOL();
@@ -74,24 +79,30 @@ export const generateSummary = (
     .addHeading("Metrics over time", 3)
     .addEOL()
     .addRaw(
-      monthWithMatchToGanttChart("New PRs per month", metrics.monthlyMetrics.creation),
+      monthWithMatchToGanttChart(
+        "New PRs per month",
+        metrics.monthlyMetrics.creation,
+      ),
     )
     .addEOL()
     .addRaw(
-      monthWithMatchToGanttChart("Merged PRs per month", metrics.monthlyMetrics.closed),
+      monthWithMatchToGanttChart(
+        "Merged PRs per month",
+        metrics.monthlyMetrics.closed,
+      ),
     )
     .addEOL()
     .addRaw(
       monthWithMatchToGanttChart(
         "Lines changed per month",
-        metrics.monthlyAverages.linesChanged
+        metrics.monthlyAverages.linesChanged,
       ),
     )
     .addEOL()
     .addRaw(
       monthWithMatchToGanttChart(
         "Reviews per month",
-        metrics.monthlyMetrics.reviews
+        metrics.monthlyMetrics.reviews,
       ),
     )
     .addEOL();
@@ -101,7 +112,7 @@ export const generateSummary = (
 
 const monthWithMatchToGanttChart = (
   title: string,
-  months: [string,number][],
+  months: [string, number][],
 ): string => `\`\`\`mermaid
 gantt
   title ${title}
@@ -109,8 +120,7 @@ gantt
   axisFormat %s
   ${months
     .map(
-      ([ month, matches ]) =>
-        `section ${month}\n    ${matches} : 0, ${matches}`,
+      ([month, matches]) => `section ${month}\n    ${matches} : 0, ${matches}`,
     )
     .join("\n    ")}
 \`\`\``;

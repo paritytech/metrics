@@ -50,9 +50,7 @@ export class PullRequestAnalytics {
   generateMonthlyMetrics(
     prList: PullRequestInfo[],
   ): PullRequestMetrics["monthlyMetrics"] {
-    const creation = calculateEventsPerMonth(
-      prList.map(({ creation }) => creation),
-    );
+    const creation = calculateEventsPerMonth(prList.map((pr) => pr.creation));
     const reviews = extractMatchesFromDate(
       prList
         .filter((pr) => !!pr.review)
@@ -116,7 +114,7 @@ export class PullRequestAnalytics {
     };
   }
 
-  async getPullRequestAverages(
+  getPullRequestAverages(
     prList: PullRequestNode[],
   ): Promise<PullRequestInfo[]> {
     const averages: PullRequestInfo[] = [];
