@@ -40,7 +40,7 @@ export class PullRequestAnalytics {
       merged: prList.filter(({ state }) => state === "MERGED").length,
     };
 
-    const prs = await this.getPullRequestAverages(prList);
+    const prs = this.getPullRequestAverages(prList);
     const monthlyMetrics = this.generateMonthlyMetrics(prs);
     const monthlyAverages = this.generateMonthlyAverages(prs);
 
@@ -114,9 +114,7 @@ export class PullRequestAnalytics {
     };
   }
 
-  getPullRequestAverages(
-    prList: PullRequestNode[],
-  ): Promise<PullRequestInfo[]> {
+  getPullRequestAverages(prList: PullRequestNode[]): PullRequestInfo[] {
     const averages: PullRequestInfo[] = [];
 
     for (const pr of prList) {
