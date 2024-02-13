@@ -59,7 +59,7 @@ export const extractMatchesFromDate = <T extends { date: string }>(
 };
 
 /**
- * Calculates how many team a date is repeated in a given month
+ * Calculates how many times a date is repeated in a given month
  */
 export const calculateEventsPerMonth = (dates: string[]): MonthWithMatch[] =>
   extractMatchesFromDate(
