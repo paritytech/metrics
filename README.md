@@ -37,7 +37,7 @@ jobs:
     name: Get repository metrics
     steps:
       - uses: paritytech/metrics@main
-        name: Fetch polkadot-fellows/runtimes metrics
+        name: Fetch metrics
         with:
           GITHUB_TOKEN: ${{ github.token }}
           owner: paritytech
