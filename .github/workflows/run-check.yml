@@ -10,20 +10,20 @@ jobs:
       - uses: paritytech/metrics@pull/stadistics
         name: Fetch polkadot-fellows/runtimes metrics
         with:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GITHUB_TOKEN: ${{ github.token }}
           owner: polkadot-fellows
           repo: runtimes
     
       - uses: paritytech/metrics@pull/stadistics
         name: Fetch polkadot-fellows/RFCs metrics
         with:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GITHUB_TOKEN: ${{ github.token }}
           owner: polkadot-fellows
           repo: RFCs
     
       - uses: paritytech/metrics@pull/stadistics
-        name: Fetch paritytech/opstooling metrics
+        name: Fetch paritytech/polkadot-sdk metrics
         with:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GITHUB_TOKEN: ${{ github.token }}
           owner: paritytech
-          repo: metrics
+          repo: polkadot-sdk
