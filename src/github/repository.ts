@@ -2,9 +2,19 @@ import PULL_REQUEST_LIST_QUERY from "./PullRequestList";
 import {
   ActionLogger,
   GitHubClient,
-  PullRequestListGQL,
+  PageInfoQuery,
   PullRequestNode,
 } from "./types";
+
+interface PullRequestList {
+  repository: {
+    pullRequests: {
+      totalCount: number;
+      nodes: PullRequestNode[];
+      pageInfo: PageInfoQuery;
+    };
+  };
+}
 
 /** API class that uses the default token to access the data from the pull request and the repository */
 export class RepositoryApi {
@@ -26,11 +36,13 @@ export class RepositoryApi {
       `Extracting all PR information from ${this.repo.owner}/${this.repo.repo}`,
     );
     do {
-      const query: PullRequestListGQL =
-        await this.api.graphql<PullRequestListGQL>(PULL_REQUEST_LIST_QUERY, {
+      const query: PullRequestList = await this.api.graphql<PullRequestList>(
+        PULL_REQUEST_LIST_QUERY,
+        {
           cursor,
           ...this.repo,
-        });
+        },
+      );
       const totalPages = Math.floor(
         query.repository.pullRequests.totalCount / 100,
       );

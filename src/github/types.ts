@@ -10,15 +10,6 @@ export interface ActionLogger {
 
 export type GitHubClient = InstanceType<typeof GitHub>;
 
-export type PullRequestList =
-  Endpoints["GET /repos/{owner}/{repo}/pulls"]["response"]["data"];
-export type PullRequestReviewList =
-  Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}/reviews"]["response"]["data"];
-export type PullRequestGet =
-  Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}"]["response"]["data"];
-export type IssueCommentList =
-  Endpoints["GET /repos/{owner}/{repo}/issues/comments"]["response"]["data"];
-
 export interface PageInfoQuery {
   endCursor: string | null;
   startCursor: string | null;
@@ -41,15 +32,5 @@ export interface PullRequestNode {
       state: "APPROVED" | "COMMENTED" | "CHANGES_REQUESTED";
       author: { login: string };
     }[];
-  };
-}
-
-export interface PullRequestListGQL {
-  repository: {
-    pullRequests: {
-      totalCount: number;
-      nodes: PullRequestNode[];
-      pageInfo: PageInfoQuery;
-    };
   };
 }

@@ -2,8 +2,8 @@ name: "GitHub Metrics"
 description: "Get the metrics for a repository"
 author: Bullrich
 branding:
-  icon: copy
-  color: yellow
+  icon: activity
+  color: blue
 inputs:
   GITHUB_TOKEN:
     required: true
