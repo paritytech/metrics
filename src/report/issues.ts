@@ -63,7 +63,7 @@ export class IssueAnalytics {
         .filter(({ comments }) => comments.totalCount > 0)
         .map((issue) => {
           return {
-            date: issue.createdAt,
+            date: issue.comments.nodes[0].createdAt as string,
             daysToFirstComment: calculateDaysBetweenDates(
               issue.createdAt,
               issue.comments.nodes[0].createdAt as string,
@@ -78,7 +78,7 @@ export class IssueAnalytics {
         .filter(({ closedAt }) => !!closedAt)
         .map((issue) => {
           return {
-            date: issue.createdAt,
+            date: issue.closedAt as string,
             daysToClose: calculateDaysBetweenDates(
               issue.createdAt,
               issue.closedAt as string,
