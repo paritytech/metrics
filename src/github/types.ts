@@ -33,3 +33,17 @@ export interface PullRequestNode {
     }[];
   };
 }
+
+export interface IssueNode {
+  title: string;
+  number: number;
+  state: "OPEN" | "CLOSED";
+  createdAt: string;
+  comments: {
+    totalCount: number;
+    nodes: {
+      createdAt: string;
+      author: { login: string };
+    }[];
+  };
+}
