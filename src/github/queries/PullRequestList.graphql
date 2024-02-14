@@ -1,0 +1,40 @@
+query PullRequests($cursor: String, $owner: String!, $repo: String!) {
+  repository(owner: $owner, name: $repo) {
+    pullRequests(
+      first: 100
+      orderBy: { field: UPDATED_AT, direction: ASC }
+      after: $cursor
+    ) {
+      totalCount
+      nodes {
+        ... on PullRequest {
+          title
+          number
+          state
+          createdAt
+          mergedAt
+          additions
+          deletions
+          reviews(first: 100) {
+            totalCount
+            nodes {
+              ... on PullRequestReview {
+                submittedAt
+                state
+                author {
+                  login
+                }
+              }
+            }
+          }
+        }
+      }
+      pageInfo {
+        endCursor
+        startCursor
+        hasNextPage
+        hasPreviousPage
+      }
+    }
+  }
+}

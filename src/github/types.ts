@@ -8,3 +8,28 @@ export interface ActionLogger {
 }
 
 export type GitHubClient = InstanceType<typeof GitHub>;
+
+export interface PageInfoQuery {
+  endCursor: string | null;
+  startCursor: string | null;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+export interface PullRequestNode {
+  title: string;
+  number: number;
+  createdAt: string;
+  state: "OPEN" | "CLOSED" | "MERGED";
+  mergedAt: string | null;
+  additions: number;
+  deletions: number;
+  reviews: {
+    totalCount: number;
+    nodes: {
+      submittedAt: string;
+      state: "APPROVED" | "COMMENTED" | "CHANGES_REQUESTED";
+      author: { login: string };
+    }[];
+  };
+}

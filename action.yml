@@ -1,17 +1,23 @@
-name: "Example Action"
-description: "This values need to be changed"
+name: "GitHub Metrics"
+description: "Get the metrics for a repository"
 author: Bullrich
 branding:
-  icon: copy
-  color: yellow
+  icon: activity
+  color: blue
 inputs:
   GITHUB_TOKEN:
     required: true
     description: The token to access the repo
+  repo:
+    required: false
+    description: The repo to fetch the information from. Defaults to runner
+  owner:
+    required: false
+    description: The owner of the repo to fetch the information from. Defaults to the runner of the action
 outputs:
   repo:
-    description: 'The name of the repo in owner/repo pattern'
+    description: "The name of the repo in owner/repo pattern"
 
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
+  using: "docker"
+  image: "Dockerfile"
