@@ -39,6 +39,7 @@ export interface IssueNode {
   number: number;
   state: "OPEN" | "CLOSED";
   createdAt: string;
+  closedAt: string | null;
   comments: {
     totalCount: number;
     nodes: {

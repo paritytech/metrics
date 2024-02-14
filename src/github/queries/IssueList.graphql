@@ -12,6 +12,7 @@ query Issues($cursor: String, $owner: String!, $repo: String!) {
           number
           state
           createdAt
+          closedAt
           comments(first: 100) {
             totalCount
             nodes {
