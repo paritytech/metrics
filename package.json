@@ -8,9 +8,9 @@
     "build": "ncc build --license LICENSE",
     "cli": "ncc build src/cli.ts -o .cli && node .cli",
     "test": "jest",
-    "fix": "eslint --fix 'src/**/*'",
+    "fix": "eslint --fix 'src/**/*' && prettier . --write",
     "lint": "eslint 'src/**/*'",
-    "copy-schema":"node scripts/schemas.js",
+    "copy-schema": "node scripts/schemas.js",
     "postinstall": "yarn run copy-schema",
     "prebuild": "yarn run copy-schema"
   },

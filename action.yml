@@ -16,8 +16,8 @@ inputs:
     description: The owner of the repo to fetch the information from. Defaults to the runner of the action
 outputs:
   repo:
-    description: 'The name of the repo in owner/repo pattern'
+    description: "The name of the repo in owner/repo pattern"
 
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
+  using: "docker"
+  image: "Dockerfile"

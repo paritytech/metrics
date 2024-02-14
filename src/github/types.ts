@@ -1,5 +1,4 @@
 import type { GitHub } from "@actions/github/lib/utils";
-import { Endpoints } from "@octokit/types";
 
 export interface ActionLogger {
   debug(message: string): void;
