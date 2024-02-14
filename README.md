@@ -8,6 +8,18 @@ Supports obtaining metrics from:
 
 ## To start
 
+### Run from CLI
+
+Copy `example.env` as `.env` and replace the variables with your own.
+
+Run:
+- `yarn install`
+- `yarn run cli`
+
+It will generate a file named `report.md` as the output.
+
+### Run as GitHub action
+
 Install this action in your repository:
 
 ```yml
@@ -31,7 +43,7 @@ jobs:
           repo: metrics
 ```
 
-## Inputs
+#### Inputs
 
 - `GITHUB_TOKEN`: Token to access the repo.
   - If the repo is public, or is the same repo where the action is being executed, you can use `${{ github.token }}`
@@ -43,3 +55,7 @@ jobs:
 - `repo`: Name of the repository to crawl.
   - **Optional**.
   - Default to the repository's name where this action is running.
+
+#### Outputs
+
+In the [action's summary](https://github.blog/2022-05-09-supercharging-github-actions-with-job-summaries/), it will publish the markdown file, so be sure to see the `summary` (which is different than the logs).
