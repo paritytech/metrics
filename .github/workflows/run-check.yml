@@ -1,3 +1,4 @@
+# TODO: Remove this file before merging
 name: Fetch metrics
 
 on: [pull_request]
@@ -13,17 +14,17 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           owner: polkadot-fellows
           repo: runtimes
-    
+
       - uses: paritytech/metrics@pull/stadistics
         name: Fetch polkadot-fellows/RFCs metrics
         with:
           GITHUB_TOKEN: ${{ github.token }}
           owner: polkadot-fellows
           repo: RFCs
-    
+
       - uses: paritytech/metrics@pull/stadistics
         name: Fetch paritytech/ink metrics
         with:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.PAT }}
           owner: paritytech
           repo: ink
