@@ -22,8 +22,8 @@ jobs:
           repo: RFCs
     
       - uses: paritytech/metrics@pull/stadistics
-        name: Fetch paritytech/polkadot-sdk metrics
+        name: Fetch paritytech/ink metrics
         with:
           GITHUB_TOKEN: ${{ github.token }}
           owner: paritytech
-          repo: polkadot-sdk
+          repo: ink
