@@ -13,6 +13,7 @@ Supports obtaining metrics from:
 Copy `example.env` as `.env` and replace the variables with your own.
 
 Run:
+
 - `yarn install`
 - `yarn run cli`
 

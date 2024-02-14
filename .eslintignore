@@ -1,4 +1,4 @@
 node_modules
 dist
-.git
-*.graphql
+.github
+src/github/queries/*

@@ -1,6 +1,6 @@
 import { validate } from "@octokit/graphql-schema";
 
-import PULL_REQUEST_LIST_QUERY from "../github/PullRequestList";
+import PULL_REQUEST_LIST_QUERY from "../github/queries/PullRequestList";
 
 describe("Validate Schemas", () => {
   test("PULL_REQUEST_LIST_QUERY", () => {

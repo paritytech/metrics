@@ -1,4 +1,4 @@
-import PULL_REQUEST_LIST_QUERY from "./PullRequestList";
+import PULL_REQUEST_LIST_QUERY from "./queries/PullRequestList";
 import {
   ActionLogger,
   GitHubClient,

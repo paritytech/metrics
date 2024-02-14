@@ -15,4 +15,4 @@
 report.md
 
 # GraphQL files
-src/github/PullRequestList.ts
+src/github/queries/*.ts
