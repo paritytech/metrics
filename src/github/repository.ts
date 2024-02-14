@@ -20,7 +20,7 @@ export class RepositoryApi {
     const prs: PullRequestNode[] = [];
     let cursor: string | null = null;
     let hasNextPage: boolean = false;
-    let currentPage: number = 1;
+    let currentPage: number = 0;
 
     this.logger.info(
       `Extracting all PR information from ${this.repo.owner}/${this.repo.repo}`,
