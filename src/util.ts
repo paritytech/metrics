@@ -14,7 +14,7 @@ export function generateCoreLogger(): ActionLogger {
  * @param getAmount The method to extract such custom value from the object to add to the metrics
  * @param returnAverage True if the result should be the average for the metrics for a month,
  * false if it must be the accumulation
- * @returns Returns an array of objects of type {month: "MM YY", matches: number}
+ * @returns Returns an array of tuples - a month in the "MM YY" format and a corresponding number of matches.
  */
 export const extractMatchesFromDate = <T extends { date: string }>(
   dates: T[],
