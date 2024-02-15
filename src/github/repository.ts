@@ -1,7 +1,9 @@
+import ISSUE_LIST_QUERY from "./queries/IssueList";
 import PULL_REQUEST_LIST_QUERY from "./queries/PullRequestList";
 import {
   ActionLogger,
   GitHubClient,
+  IssueNode,
   PageInfoQuery,
   PullRequestNode,
 } from "./types";
@@ -11,6 +13,16 @@ interface PullRequestList {
     pullRequests: {
       totalCount: number;
       nodes: PullRequestNode[];
+      pageInfo: PageInfoQuery;
+    };
+  };
+}
+
+interface IssueList {
+  repository: {
+    issues: {
+      totalCount: number;
+      nodes: IssueNode[];
       pageInfo: PageInfoQuery;
     };
   };
@@ -43,10 +55,9 @@ export class RepositoryApi {
           ...this.repo,
         },
       );
-      const totalPages = Math.floor(
-        query.repository.pullRequests.totalCount / 100,
-      );
-      this.logger.info(`Querying page ${currentPage++}/${totalPages}`);
+      const totalPages =
+        Math.floor(query.repository.pullRequests.totalCount / 100) + 1;
+      this.logger.info(`Querying page ${++currentPage}/${totalPages}`);
       const { nodes, pageInfo } = query.repository.pullRequests;
       prs.push(...nodes);
       hasNextPage = pageInfo.hasNextPage;
@@ -56,5 +67,36 @@ export class RepositoryApi {
     this.logger.info(`Found information for ${prs.length} pull requests`);
 
     return prs;
+  }
+
+  async getIssues(): Promise<IssueNode[]> {
+    const issues: IssueNode[] = [];
+    let cursor: string | null = null;
+    let hasNextPage: boolean = false;
+    let currentPage: number = 0;
+
+    this.logger.info(
+      `Extracting all issue information from ${this.repo.owner}/${this.repo.repo}`,
+    );
+    do {
+      const query: IssueList = await this.api.graphql<IssueList>(
+        ISSUE_LIST_QUERY,
+        {
+          cursor,
+          ...this.repo,
+        },
+      );
+      const totalPages =
+        Math.floor(query.repository.issues.totalCount / 100) + 1;
+      this.logger.info(`Querying page ${++currentPage}/${totalPages}`);
+      const { nodes, pageInfo } = query.repository.issues;
+      issues.push(...nodes);
+      hasNextPage = pageInfo.hasNextPage;
+      cursor = pageInfo.endCursor;
+    } while (hasNextPage);
+
+    this.logger.info(`Found information for ${issues.length} issues`);
+
+    return issues;
   }
 }

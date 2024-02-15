@@ -24,6 +24,29 @@ export interface PullRequestMetrics {
   };
 }
 
+export interface IssuesMetrics {
+  open: number;
+  closed: number;
+  /** Amount of events per month  */
+  monthlyMetrics: {
+    /** New issues per month */
+    creation: MonthWithMatch[];
+    /** Total comments per month */
+    comments: MonthWithMatch[];
+    /** Closed issues per month */
+    closed: MonthWithMatch[];
+  };
+  /** Average of events per month */
+  monthlyAverages: {
+    /** Average comments per month */
+    comments: MonthWithMatch[];
+    /** Average time to close */
+    closeTime: MonthWithMatch[];
+    /** Average time to first comment per month */
+    timeToFirstComment: MonthWithMatch[];
+  };
+}
+
 export type MonthWithMatch = [string, number];
 
 export type DurationWithInitialDate = {

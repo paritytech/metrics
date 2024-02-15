@@ -21,6 +21,9 @@ export const extractMatchesFromDate = <T extends { date: string }>(
   getAmount: (value: T) => number,
   returnAverage: boolean,
 ): MonthWithMatch[] => {
+  if (dates.length === 0) {
+    return [];
+  }
   dates.sort((a, b) => (a.date > b.date ? 1 : -1));
 
   // We get the month of the first date
