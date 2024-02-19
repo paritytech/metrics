@@ -25,5 +25,5 @@ setOutput("repo", `${repo.owner}/${repo.repo}`);
 
 const token = getInput("GITHUB_TOKEN", { required: true });
 getMetrics(getOctokit(token), generateCoreLogger(), repo)
-  .then(async (result) => await result.write())
+  .then(async (result) => await result.summary.write())
   .catch(setFailed);

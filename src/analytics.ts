@@ -4,13 +4,20 @@ import { RepositoryApi } from "./github/repository";
 import { ActionLogger, GitHubClient } from "./github/types";
 import { IssueAnalytics } from "./report/issues";
 import { PullRequestAnalytics } from "./report/pullRequests";
+import { IssuesMetrics, PullRequestMetrics } from "./report/types";
 import { generateSummary } from "./reporter";
+
+type MetricsReport = {
+  prMetrics: PullRequestMetrics;
+  issueMetrics: IssuesMetrics;
+  summary: typeof summary;
+};
 
 export const getMetrics = async (
   api: GitHubClient,
   logger: ActionLogger,
   repo: { owner: string; repo: string },
-): Promise<typeof summary> => {
+): Promise<MetricsReport> => {
   const repoApi = new RepositoryApi(api, logger, repo);
   const prReporter = new PullRequestAnalytics(repoApi, logger, repo);
   const prReport = await prReporter.fetchMetricsForPullRequests();
@@ -18,5 +25,6 @@ export const getMetrics = async (
   const issuesReport = new IssueAnalytics(repoApi, logger);
   const issueReport = await issuesReport.getAnalytics();
 
-  return generateSummary(repo, prReport, issueReport);
+  const sum = generateSummary(repo, prReport, issueReport);
+  return { prMetrics: prReport, issueMetrics: issueReport, summary: sum };
 };
