@@ -60,3 +60,11 @@ jobs:
 #### Outputs
 
 In the [action's summary](https://github.blog/2022-05-09-supercharging-github-actions-with-job-summaries/), it will publish the markdown file, so be sure to see the `summary` (which is different than the logs).
+
+It will also produce a file with the same content as the summary in a file named `report.md`. Be sure to use this file if you need it for rendering.
+
+It will also output three variables:
+
+- `repo`: The name of the repo in owner/repo pattern.
+- `pr-report`: A JSON string with the metrics obtained from the repository PRs.
+- `issue-report`: A JSON string with the metrics obtained from the repository issues.

@@ -17,6 +17,10 @@ inputs:
 outputs:
   repo:
     description: "The name of the repo in owner/repo pattern"
+  pr-report:
+    description: "A JSON string with the metrics obtained from the repository PRs"
+  issue-report:
+    description: "A JSON string with the metrics obtained from the repository issues"
 
 runs:
   using: "docker"
