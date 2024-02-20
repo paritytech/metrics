@@ -68,3 +68,29 @@ It will also output three variables:
 - `repo`: The name of the repo in owner/repo pattern.
 - `pr-report`: A JSON string with the metrics obtained from the repository PRs.
 - `issue-report`: A JSON string with the metrics obtained from the repository issues.
+
+### Publish metrics
+
+The action produces a file `./index.html`. This file contains all the metrics.
+
+You can deploy this site to GitHub pages if you want to have up to date metrics in a site.
+
+```yml
+    steps:
+      - uses: paritytech/metrics@generate-website
+        name: Fetch metrics
+        id: metric
+        with:
+            GITHUB_TOKEN: ${{ github.token }}
+            owner: paritytech
+            repo: metrics
+      - name: Setup Pages
+        uses: actions/configure-pages@v2
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: ./
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
+```
