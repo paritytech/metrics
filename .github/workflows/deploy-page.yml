@@ -20,9 +20,9 @@ jobs:
         name: Fetch polkadot-fellows/runtimes metrics
         id: metric
         with:
-            GITHUB_TOKEN: ${{ github.token }}
-            owner: polkadot-fellows
-            repo: runtimes
+          GITHUB_TOKEN: ${{ github.token }}
+          owner: polkadot-fellows
+          repo: runtimes
       - name: Setup Pages
         uses: actions/configure-pages@v2
       - name: Upload artifact

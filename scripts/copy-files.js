@@ -15,7 +15,7 @@ const copyFile = (fileName, extension) => {
     fileName.replace(oldExtension, extension),
     `// Generated from ${fileName}\nexport default \`${content}\`;`,
   );
-}
+};
 
 for (const file of files) {
   if (file.endsWith(".graphql")) {
