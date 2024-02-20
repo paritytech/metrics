@@ -29,8 +29,6 @@ setOutput("repo", `${repo.owner}/${repo.repo}`);
 const token = getInput("GITHUB_TOKEN", { required: true });
 getMetrics(getOctokit(token), generateCoreLogger(), repo)
   .then(async (result) => {
-    // We write the job output
-    await result.summary.write();
     await writeFile("./report.md", result.summary.stringify());
 
     // We set the report for both outputs
@@ -48,5 +46,8 @@ getMetrics(getOctokit(token), generateCoreLogger(), repo)
         htmlText,
       ),
     );
+
+    // We write the job output
+    await result.summary.write();
   })
   .catch(setFailed);
