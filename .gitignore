@@ -12,7 +12,11 @@
 .idea
 
 .env
-report.md
 
-# GraphQL files
+# Generate files
+report.md
+./index.html
+
+# Generated files
 src/github/queries/*.ts
+src/render/template.ts

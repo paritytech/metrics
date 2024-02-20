@@ -10,9 +10,9 @@
     "test": "jest",
     "fix": "eslint --fix 'src/**/*' && prettier . --write",
     "lint": "eslint 'src/**/*'",
-    "copy-schema": "node scripts/schemas.js",
-    "postinstall": "yarn run copy-schema",
-    "prebuild": "yarn run copy-schema"
+    "copy": "node scripts/copy-files.js",
+    "postinstall": "yarn run copy",
+    "prebuild": "yarn run copy"
   },
   "repository": {
     "type": "git",

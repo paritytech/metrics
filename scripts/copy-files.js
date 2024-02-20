@@ -23,4 +23,4 @@ for (const file of files) {
   }
 }
 
-copyFile("src/template.html", "ts");
+copyFile("src/render/template.html", "ts");
