@@ -1,0 +1,32 @@
+name: Deploy page
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+permissions:
+  pages: write
+  id-token: write
+
+jobs:
+  get_metrics:
+    runs-on: ubuntu-latest
+    name: Get repository metrics
+    steps:
+      - uses: paritytech/metrics@generate-website
+        name: Fetch polkadot-fellows/runtimes metrics
+        id: metric
+        with:
+            GITHUB_TOKEN: ${{ github.token }}
+            owner: polkadot-fellows
+            repo: runtimes
+      - name: Setup Pages
+        uses: actions/configure-pages@v2
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: ./
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
