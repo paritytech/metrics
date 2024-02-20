@@ -3,4 +3,4 @@ dist
 .git
 src/github/queries/*
 .vscode/
-src/render/*.html
+src/render/template.*
