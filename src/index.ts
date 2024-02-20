@@ -2,8 +2,10 @@ import { getInput, setFailed, setOutput } from "@actions/core";
 import { context, getOctokit } from "@actions/github";
 import { Context } from "@actions/github/lib/context";
 import { writeFile } from "fs/promises";
+import { Converter } from "showdown";
 
 import { getMetrics } from "./analytics";
+import TEMPLATE from "./template";
 import { generateCoreLogger } from "./util";
 
 const getRepo = (ctx: Context) => {
@@ -34,5 +36,17 @@ getMetrics(getOctokit(token), generateCoreLogger(), repo)
     // We set the report for both outputs
     setOutput("pr-report", JSON.stringify(result.prMetrics));
     setOutput("issue-report", JSON.stringify(result.issueMetrics));
+
+    // We write the HTML file
+    const converter = new Converter({ ghCodeBlocks: true });
+    const htmlText = converter.makeHtml(result.summary.stringify());
+    console.log("Converting text to HTML");
+    await writeFile(
+      "./index.html",
+      TEMPLATE.replace("%NAME%", `${repo.owner}/${repo.repo}`).replace(
+        "%CONTENT%",
+        htmlText,
+      ),
+    );
   })
   .catch(setFailed);
