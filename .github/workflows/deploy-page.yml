@@ -23,6 +23,8 @@ jobs:
             repo: runtimes
       - name: Setup Pages
         uses: actions/configure-pages@v2
+      - run: ls -la
+      - run: cat ./index.html
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
