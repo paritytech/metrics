@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Get repository metrics
     steps:
-      - uses: paritytech/metrics@generate-website
+      - uses: paritytech/metrics@main
         name: Fetch polkadot-fellows/runtimes metrics
         id: metric
         with:
