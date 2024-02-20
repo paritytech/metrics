@@ -7,7 +7,7 @@ import { Converter } from "showdown";
 
 import { getMetrics } from "./analytics";
 import { ActionLogger } from "./github/types";
-import TEMPLATE from "./template";
+import { generateSite } from "./render";
 
 const env = envsafe({
   OWNER: str({
@@ -42,10 +42,7 @@ const action = async () => {
   console.log("Converting text to HTML");
   await writeFile(
     "./index.html",
-    TEMPLATE.replace("%NAME%", `${env.OWNER}/${env.REPO}`).replace(
-      "%CONTENT%",
-      htmlText,
-    ),
+    generateSite(`${env.OWNER}/${env.REPO}`, htmlText),
   );
 };
 

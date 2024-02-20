@@ -5,7 +5,7 @@ import { writeFile } from "fs/promises";
 import { Converter } from "showdown";
 
 import { getMetrics } from "./analytics";
-import TEMPLATE from "./template";
+import { generateSite } from "./render";
 import { generateCoreLogger } from "./util";
 
 const getRepo = (ctx: Context) => {
@@ -41,13 +41,10 @@ getMetrics(getOctokit(token), generateCoreLogger(), repo)
     console.log("Converting text to HTML");
     await writeFile(
       "./index.html",
-      TEMPLATE.replace("%NAME%", `${repo.owner}/${repo.repo}`).replace(
-        "%CONTENT%",
-        htmlText,
-      ),
+      generateSite(`${repo.owner}/${repo.repo}`, htmlText),
     );
 
-    // We write the job output
+    // We finally write the job output
     await result.summary.write();
   })
   .catch(setFailed);
