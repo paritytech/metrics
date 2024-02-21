@@ -15,7 +15,7 @@
 
 # Generate files
 report.md
-./index.html
+index.html
 
 # Generated files
 src/github/queries/*.ts
