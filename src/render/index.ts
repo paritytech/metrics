@@ -1,2 +1,4 @@
+import TEMPLATE from "./template";
+
 export const generateSite = (title: string, content: string): string =>
-  title.replace("%NAME%", title).replace("%CONTENT%", content);
+  TEMPLATE.replace("%NAME%", title).replace("%CONTENT%", content);

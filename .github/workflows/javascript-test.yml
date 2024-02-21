@@ -10,12 +10,21 @@ jobs:
     runs-on: ubuntu-latest
     name: running ${{ matrix.command }}
     steps:
-      - uses: actions/checkout@v3
-      - name: Use node 18
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - name: Use node 20
+        uses: actions/setup-node@v4
         with:
           node-version: 20
-      - uses: c-hive/gha-yarn-cache@v2
+      - name: Cache node modules
+        id: cache-npm
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          # npm cache files are stored in `~/.npm` on Linux/macOS
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
       - name: Install dependencies
         run: yarn install --frozen-lockfile
       - run: yarn run ${{ matrix.command }}
