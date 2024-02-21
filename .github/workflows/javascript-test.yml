@@ -11,7 +11,7 @@ jobs:
     name: running ${{ matrix.command }}
     steps:
       - uses: actions/checkout@v4
-      - name: Use node 18
+      - name: Use node 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
