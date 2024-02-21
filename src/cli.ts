@@ -3,9 +3,11 @@ import { getOctokit } from "@actions/github";
 import chalk from "chalk";
 import { envsafe, str } from "envsafe";
 import { writeFile } from "fs/promises";
+import { Converter } from "showdown";
 
 import { getMetrics } from "./analytics";
 import { ActionLogger } from "./github/types";
+import { generateSite } from "./render";
 
 const env = envsafe({
   OWNER: str({
@@ -33,7 +35,15 @@ const action = async () => {
     owner: env.OWNER,
     repo: env.REPO,
   });
-  await writeFile("./report.md", report.summary.stringify());
+  const markdownContent = report.summary.stringify();
+  await writeFile("./report.md", markdownContent);
+  const converter = new Converter({ ghCodeBlocks: true });
+  const htmlText = converter.makeHtml(markdownContent);
+  console.log("Converting text to HTML");
+  await writeFile(
+    "./index.html",
+    generateSite(`${env.OWNER}/${env.REPO}`, htmlText),
+  );
 };
 
 action()
