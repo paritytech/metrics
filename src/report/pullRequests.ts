@@ -7,7 +7,7 @@ import {
   calculateEventsPerMonth,
   extractMatchesFromDate,
 } from "../util";
-import { DurationWithInitialDate, MonthWithMatch, PullRequestMetrics } from "./types";
+import { DurationWithInitialDate, PullRequestMetrics } from "./types";
 
 interface PullRequestInfo {
   number: number;
@@ -44,7 +44,9 @@ export class PullRequestAnalytics {
     const monthlyMetrics = this.generateMonthlyMetrics(prs);
     const monthlyAverages = this.generateMonthlyAverages(prs);
 
-    const reviewers = this.getTopReviewers(prList.flatMap(pr => pr.reviews.nodes));
+    const reviewers = this.getTopReviewers(
+      prList.flatMap((pr) => pr.reviews.nodes),
+    );
 
     return { ...prMetric, monthlyMetrics, monthlyAverages, reviewers };
   }
@@ -138,9 +140,9 @@ export class PullRequestAnalytics {
           : undefined,
         review: timeToFirstReview
           ? {
-            date: firstReview as string,
-            daysSinceCreation: timeToFirstReview,
-          }
+              date: firstReview as string,
+              daysSinceCreation: timeToFirstReview,
+            }
           : undefined,
         additions: pr.additions,
         deletions: pr.deletions,
@@ -151,7 +153,9 @@ export class PullRequestAnalytics {
     return averages;
   }
 
-  getTopReviewers(reviews: PullRequestNode["reviews"]["nodes"]): PullRequestMetrics["reviewers"] {
+  getTopReviewers(
+    reviews: PullRequestNode["reviews"]["nodes"],
+  ): PullRequestMetrics["reviewers"] {
     if (reviews.length === 0) {
       return [];
     }
@@ -172,15 +176,19 @@ export class PullRequestAnalytics {
       } else {
         // If the month is over, we check who reviewed the most that month
         let topReviewer: [string, number] = ["", -1];
-        for (const [user, reviews] of reviewsPerUser) {
-          if (reviews > topReviewer[1]) {
-            topReviewer = [user, reviews];
+        for (const [user, nrOfReviews] of reviewsPerUser) {
+          if (nrOfReviews > topReviewer[1]) {
+            topReviewer = [user, nrOfReviews];
           }
         }
         // If there was at least one review, we add it to that month's top reviewer
         if (topReviewer[1] > 0) {
-          const [user, reviews] = topReviewer;
-          monthsWithMatches.push({ month: currentMonth.format("MMM YYYY"), reviews, user });
+          const [user, nrOfReviews] = topReviewer;
+          monthsWithMatches.push({
+            month: currentMonth.format("MMM YYYY"),
+            reviews: nrOfReviews,
+            user,
+          });
         }
 
         // We move the month to the next one

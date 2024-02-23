@@ -28,7 +28,11 @@ const generatePrSummary = (
   "Closed" : ${prMetrics.closed}
   \`\`\``;
 
-  text = summary.addHeading("Pull Requests", 1).addEOL().addRaw(prChart).addEOL();
+  text = summary
+    .addHeading("Pull Requests", 1)
+    .addEOL()
+    .addRaw(prChart)
+    .addEOL();
 
   const totalAverageTimeToClose = calculateAverage(
     prMetrics.monthlyAverages.mergeTime.map(([_, average]) => average),
@@ -123,13 +127,15 @@ const generatePrSummary = (
     dateFormat X
     axisFormat %s
     ${prMetrics.reviewers
-    .map(
-      ({ month, user, reviews }) => `section ${month}\n    ${user} : 0, ${reviews}`,
-    )
-    .join("\n    ")}
+      .map(
+        ({ month, user, reviews }) =>
+          `section ${month}\n    ${user} : 0, ${reviews}`,
+      )
+      .join("\n    ")}
   \`\`\``;
 
-  text = text.addHeading("Top reviewers", 3)
+  text = text
+    .addHeading("Top reviewers", 3)
     .addEOL()
     .addRaw(topReviewers)
     .addEOL();
@@ -147,11 +153,7 @@ const generateIssueSummary = (
   "Closed" : ${issueMetrics.closed}
   \`\`\``;
 
-  text = summary
-    .addHeading("Issues", 1)
-    .addEOL()
-    .addRaw(prChart)
-    .addEOL();
+  text = summary.addHeading("Issues", 1).addEOL().addRaw(prChart).addEOL();
 
   const totalAverageTimeToClose = calculateAverage(
     issueMetrics.monthlyAverages.closeTime.map(([_, average]) => average),
