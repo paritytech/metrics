@@ -42,14 +42,14 @@ const generatePrSummary = (
 
   const averageReviews = `\`\`\`mermaid
     gantt
-        title Average Reviews time (days)
+        title Average PR time (days)
         dateFormat  X
         axisFormat %s
-        section Time to close
+        section To close
         ${totalAverageTimeToClose} : 0, ${totalAverageTimeToClose}
-        section Time to first review
+        section To first review
         ${totalAverageTimeToFirstReview} : 0, ${totalAverageTimeToFirstReview}
-        section Average reviews
+        section Reviews per PR
         ${totalAverageReviews} : 0, ${totalAverageReviews}
   \`\`\``;
 
