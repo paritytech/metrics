@@ -116,6 +116,24 @@ const generatePrSummary = (
     )
     .addEOL();
 
+  // Top reviewers
+  const topReviewers = `\`\`\`mermaid
+  gantt
+    title Top reviewer per month
+    dateFormat X
+    axisFormat %s
+    ${prMetrics.reviewers
+    .map(
+      ({ month, user, reviews }) => `section ${month}\n    ${user} : 0, ${reviews}`,
+    )
+    .join("\n    ")}
+  \`\`\``;
+
+  text = text.addHeading("Top reviewers", 3)
+    .addEOL()
+    .addRaw(topReviewers)
+    .addEOL();
+
   return text;
 };
 
