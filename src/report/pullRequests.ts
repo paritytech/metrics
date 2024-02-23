@@ -255,9 +255,7 @@ export class PullRequestAnalytics {
 
     let topReviewer:PullRequestMetrics["topReviewer"] =  null;
     for (const candidate of usersWithReviews) {
-      if(!topReviewer){
-        topReviewer = candidate;
-      } else if (candidate.reviews > topReviewer.reviews){
+      if (!topReviewer || candidate.reviews > topReviewer.reviews) {
         topReviewer = candidate;
       }
     }
