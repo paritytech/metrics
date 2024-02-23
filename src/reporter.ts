@@ -28,7 +28,7 @@ const generatePrSummary = (
   "Closed" : ${prMetrics.closed}
   \`\`\``;
 
-  text = summary.addHeading("PRs states", 3).addEOL().addRaw(prChart).addEOL();
+  text = summary.addHeading("Pull Requests", 1).addEOL().addRaw(prChart).addEOL();
 
   const totalAverageTimeToClose = calculateAverage(
     prMetrics.monthlyAverages.mergeTime.map(([_, average]) => average),
@@ -148,7 +148,7 @@ const generateIssueSummary = (
   \`\`\``;
 
   text = summary
-    .addHeading("Issues states", 3)
+    .addHeading("Issues", 1)
     .addEOL()
     .addRaw(prChart)
     .addEOL();
