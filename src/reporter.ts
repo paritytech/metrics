@@ -140,6 +140,12 @@ const generatePrSummary = (
     .addRaw(topReviewers)
     .addEOL();
 
+  const reviewerOfTheMonth = prMetrics.reviewers.at(-1);
+  if (reviewerOfTheMonth)
+    text = text.addHeading("Reviewer of the month", 4)
+      .addImage(reviewerOfTheMonth.avatar ?? "", `${reviewerOfTheMonth.user}'s avatar`)
+      .addRaw(`@${reviewerOfTheMonth.user} with ${reviewerOfTheMonth.reviews} reviews!`);
+
   return text;
 };
 

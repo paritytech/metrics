@@ -140,9 +140,9 @@ export class PullRequestAnalytics {
           : undefined,
         review: timeToFirstReview
           ? {
-            date: firstReview as string,
-            daysSinceCreation: timeToFirstReview,
-          }
+              date: firstReview as string,
+              daysSinceCreation: timeToFirstReview,
+            }
           : undefined,
         additions: pr.additions,
         deletions: pr.deletions,
@@ -159,42 +159,72 @@ export class PullRequestAnalytics {
     if (reviews.length === 0) {
       return [];
     }
-    reviews.sort((a, b) => (a.submittedAt > b.submittedAt ? 1 : -1));
+    reviews.sort((a, b) =>
+      moment(a.submittedAt as string).diff(moment(b.submittedAt as string)),
+    );
 
     // We get the month of the first date
     let currentMonth = moment(reviews[0].submittedAt).startOf("month");
 
     const monthsWithMatches: PullRequestMetrics["reviewers"] = [];
-    let reviewsPerUser: Map<string, number> = new Map<string, number>();
+    // let reviewsPerUser: Map<string, number> = new Map<string, number>();
+    let reviewsPerUser: { user: string; reviews: number; avatar: string }[] =
+      [];
 
     for (const review of reviews) {
+      if (!review.submittedAt) {
+        this.logger.debug(
+          `Skipping review from ${review.author.login} as it is has a null date`,
+        );
+        continue;
+      }
       // If it happened in the same month
       if (currentMonth.diff(moment(review.submittedAt), "month") == 0) {
-        const authorReviews = reviewsPerUser.get(review.author.login) ?? 0;
-        // We add an extra review for the user
-        reviewsPerUser.set(review.author.login, authorReviews + 1);
+        const reviewerIndex = reviewsPerUser
+          .map((u) => u.user)
+          .indexOf(review.author.login);
+        if (reviewerIndex > -1) {
+          // If the user exists, we increment his reviews
+          reviewsPerUser[reviewerIndex].reviews += 1;
+        } else {
+          // Else we push a new user
+          reviewsPerUser.push({
+            user: review.author.login,
+            reviews: 1,
+            avatar: review.author.avatarUrl,
+          });
+        }
       } else {
         // If the month is over, we check who reviewed the most that month
-        let topReviewer: { user: string, reviews: number, avatar: string } = { user: "", reviews: -1, avatar: "" };
-        for (const [user, nrOfReviews] of reviewsPerUser) {
-          if (nrOfReviews > topReviewer.reviews) {
-            topReviewer = { user, reviews: nrOfReviews, avatar: review.author.avatarUrl };
+        let topReviewer: { user: string; reviews: number; avatar: string } = {
+          user: "",
+          reviews: -1,
+          avatar: "",
+        };
+
+        for (const monthlyReviewer of reviewsPerUser) {
+          if (monthlyReviewer.reviews > topReviewer.reviews) {
+            topReviewer = monthlyReviewer;
           }
         }
         // If there was at least one review, we add it to that month's top reviewer
         if (topReviewer.reviews > 0) {
           monthsWithMatches.push({
             month: currentMonth.format("MMM YYYY"),
-            ...topReviewer
+            ...topReviewer,
           });
         }
 
         // We move the month to the next one
         currentMonth = moment(review.submittedAt).startOf("month");
         // We reset the monthly review object
-        reviewsPerUser = new Map<string, number>();
+        reviewsPerUser = [];
         // We add a review to the current user
-        reviewsPerUser.set(review.author.login, 1);
+        reviewsPerUser.push({
+          user: review.author.login,
+          reviews: 1,
+          avatar: review.author.avatarUrl,
+        });
       }
     }
 
