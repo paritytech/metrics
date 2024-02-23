@@ -1,4 +1,4 @@
-export type Reviewer = {user:string,avatar:string, reviews:number};
+export type Reviewer = { user: string; avatar: string; reviews: number };
 
 export interface PullRequestMetrics {
   open: number;
@@ -25,7 +25,7 @@ export interface PullRequestMetrics {
     linesChanged: MonthWithMatch[];
   };
   reviewers: ({ month: string } & Reviewer)[];
-  topReviewer?:Reviewer|null;
+  topReviewer?: Reviewer | null;
 }
 
 export interface IssuesMetrics {

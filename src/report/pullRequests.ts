@@ -45,13 +45,17 @@ export class PullRequestAnalytics {
     const monthlyAverages = this.generateMonthlyAverages(prs);
 
     const reviewList = prList.flatMap((pr) => pr.reviews.nodes);
-    const reviewers = this.getTopReviewers(reviewList,
-    );
+    const reviewers = this.getTopReviewers(reviewList);
 
     const topReviewer = this.getTopReviewer(reviewList);
-    console.log("Top reviewer is",topReviewer)
 
-    return { ...prMetric, monthlyMetrics, monthlyAverages, reviewers ,topReviewer};
+    return {
+      ...prMetric,
+      monthlyMetrics,
+      monthlyAverages,
+      reviewers,
+      topReviewer,
+    };
   }
 
   generateMonthlyMetrics(
@@ -143,9 +147,9 @@ export class PullRequestAnalytics {
           : undefined,
         review: timeToFirstReview
           ? {
-            date: firstReview as string,
-            daysSinceCreation: timeToFirstReview,
-          }
+              date: firstReview as string,
+              daysSinceCreation: timeToFirstReview,
+            }
           : undefined,
         additions: pr.additions,
         deletions: pr.deletions,
@@ -242,8 +246,10 @@ export class PullRequestAnalytics {
     }
 
     const usersWithReviews: Reviewer[] = [];
-    for (const { author: { login, avatarUrl } } of reviews) {
-      const index = usersWithReviews.map(u => u.user).indexOf(login);
+    for (const {
+      author: { login, avatarUrl },
+    } of reviews) {
+      const index = usersWithReviews.map((u) => u.user).indexOf(login);
       if (index > -1) {
         usersWithReviews[index].reviews += 1;
       } else {
@@ -251,9 +257,7 @@ export class PullRequestAnalytics {
       }
     }
 
-    console.log("List of reviewers", usersWithReviews)
-
-    let topReviewer:PullRequestMetrics["topReviewer"] =  null;
+    let topReviewer: PullRequestMetrics["topReviewer"] = null;
     for (const candidate of usersWithReviews) {
       if (!topReviewer || candidate.reviews > topReviewer.reviews) {
         topReviewer = candidate;
