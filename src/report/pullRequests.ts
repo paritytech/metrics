@@ -160,6 +160,7 @@ export class PullRequestAnalytics {
     return averages;
   }
 
+  /** Returns the reviewer who gave the biggest amount of reviews per month */
   getMonthlyReviewers(
     reviews: PullRequestNode["reviews"]["nodes"],
   ): PullRequestMetrics["reviewers"] {
@@ -238,6 +239,7 @@ export class PullRequestAnalytics {
     return monthsWithMatches;
   }
 
+  /** Returns the reviewer who gave the biggest amount of reviews */
   getTopReviewer(
     reviews: PullRequestNode["reviews"]["nodes"],
   ): PullRequestMetrics["topReviewer"] {
