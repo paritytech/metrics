@@ -7,7 +7,7 @@ import {
   calculateEventsPerMonth,
   extractMatchesFromDate,
 } from "../util";
-import { DurationWithInitialDate, PullRequestMetrics } from "./types";
+import { DurationWithInitialDate, PullRequestMetrics, Reviewer } from "./types";
 
 interface PullRequestInfo {
   number: number;
@@ -44,11 +44,14 @@ export class PullRequestAnalytics {
     const monthlyMetrics = this.generateMonthlyMetrics(prs);
     const monthlyAverages = this.generateMonthlyAverages(prs);
 
-    const reviewers = this.getTopReviewers(
-      prList.flatMap((pr) => pr.reviews.nodes),
+    const reviewList = prList.flatMap((pr) => pr.reviews.nodes);
+    const reviewers = this.getTopReviewers(reviewList,
     );
 
-    return { ...prMetric, monthlyMetrics, monthlyAverages, reviewers };
+    const topReviewer = this.getTopReviewer(reviewList);
+    console.log("Top reviewer is",topReviewer)
+
+    return { ...prMetric, monthlyMetrics, monthlyAverages, reviewers ,topReviewer};
   }
 
   generateMonthlyMetrics(
@@ -140,9 +143,9 @@ export class PullRequestAnalytics {
           : undefined,
         review: timeToFirstReview
           ? {
-              date: firstReview as string,
-              daysSinceCreation: timeToFirstReview,
-            }
+            date: firstReview as string,
+            daysSinceCreation: timeToFirstReview,
+          }
           : undefined,
         additions: pr.additions,
         deletions: pr.deletions,
@@ -229,5 +232,36 @@ export class PullRequestAnalytics {
     }
 
     return monthsWithMatches;
+  }
+
+  getTopReviewer(
+    reviews: PullRequestNode["reviews"]["nodes"],
+  ): PullRequestMetrics["topReviewer"] {
+    if (reviews.length === 0) {
+      return null;
+    }
+
+    const usersWithReviews: Reviewer[] = [];
+    for (const { author: { login, avatarUrl } } of reviews) {
+      const index = usersWithReviews.map(u => u.user).indexOf(login);
+      if (index > -1) {
+        usersWithReviews[index].reviews += 1;
+      } else {
+        usersWithReviews.push({ user: login, avatar: avatarUrl, reviews: 1 });
+      }
+    }
+
+    console.log("List of reviewers", usersWithReviews)
+
+    let topReviewer:PullRequestMetrics["topReviewer"] =  null;
+    for (const candidate of usersWithReviews) {
+      if(!topReviewer){
+        topReviewer = candidate;
+      } else if (candidate.reviews > topReviewer.reviews){
+        topReviewer = candidate;
+      }
+    }
+
+    return topReviewer;
   }
 }
