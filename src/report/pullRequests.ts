@@ -26,7 +26,7 @@ export class PullRequestAnalytics {
   constructor(
     private readonly api: RepositoryApi,
     private readonly logger: ActionLogger,
-    private readonly repo: { owner: string; repo: string },
+    repo: { owner: string; repo: string },
   ) {
     logger.debug(`Reporter has been configured for ${repo.owner}/${repo.repo}`);
   }
@@ -45,7 +45,7 @@ export class PullRequestAnalytics {
     const monthlyAverages = this.generateMonthlyAverages(prs);
 
     const reviewList = prList.flatMap((pr) => pr.reviews.nodes);
-    const reviewers = this.getTopReviewers(reviewList);
+    const reviewers = this.getMonthlyReviewers(reviewList);
 
     const topReviewer = this.getTopReviewer(reviewList);
 
@@ -160,7 +160,7 @@ export class PullRequestAnalytics {
     return averages;
   }
 
-  getTopReviewers(
+  getMonthlyReviewers(
     reviews: PullRequestNode["reviews"]["nodes"],
   ): PullRequestMetrics["reviewers"] {
     if (reviews.length === 0) {
