@@ -7,7 +7,7 @@ import {
   calculateEventsPerMonth,
   extractMatchesFromDate,
 } from "../util";
-import { DurationWithInitialDate, PullRequestMetrics } from "./types";
+import { DurationWithInitialDate, MonthWithMatch, PullRequestMetrics } from "./types";
 
 interface PullRequestInfo {
   number: number;
@@ -44,7 +44,9 @@ export class PullRequestAnalytics {
     const monthlyMetrics = this.generateMonthlyMetrics(prs);
     const monthlyAverages = this.generateMonthlyAverages(prs);
 
-    return { ...prMetric, monthlyMetrics, monthlyAverages };
+    const reviewers = this.getTopReviewers(prList.flatMap(pr => pr.reviews.nodes));
+
+    return { ...prMetric, monthlyMetrics, monthlyAverages, reviewers };
   }
 
   generateMonthlyMetrics(
@@ -136,9 +138,9 @@ export class PullRequestAnalytics {
           : undefined,
         review: timeToFirstReview
           ? {
-              date: firstReview as string,
-              daysSinceCreation: timeToFirstReview,
-            }
+            date: firstReview as string,
+            daysSinceCreation: timeToFirstReview,
+          }
           : undefined,
         additions: pr.additions,
         deletions: pr.deletions,
@@ -147,5 +149,49 @@ export class PullRequestAnalytics {
     }
 
     return averages;
+  }
+
+  getTopReviewers(reviews: PullRequestNode["reviews"]["nodes"]): PullRequestMetrics["reviewers"] {
+    if (reviews.length === 0) {
+      return [];
+    }
+    reviews.sort((a, b) => (a.submittedAt > b.submittedAt ? 1 : -1));
+
+    // We get the month of the first date
+    let currentMonth = moment(reviews[0].submittedAt).startOf("month");
+
+    const monthsWithMatches: PullRequestMetrics["reviewers"] = [];
+    let reviewsPerUser: Map<string, number> = new Map<string, number>();
+
+    for (const review of reviews) {
+      // If it happened in the same month
+      if (currentMonth.diff(moment(review.submittedAt), "month") == 0) {
+        const authorReviews = reviewsPerUser.get(review.author.login) ?? 0;
+        // We add an extra review for the user
+        reviewsPerUser.set(review.author.login, authorReviews + 1);
+      } else {
+        // If the month is over, we check who reviewed the most that month
+        let topReviewer: [string, number] = ["", -1];
+        for (const [user, reviews] of reviewsPerUser) {
+          if (reviews > topReviewer[1]) {
+            topReviewer = [user, reviews];
+          }
+        }
+        // If there was at least one review, we add it to that month's top reviewer
+        if (topReviewer[1] > 0) {
+          const [user, reviews] = topReviewer;
+          monthsWithMatches.push({ month: currentMonth.format("MMM YYYY"), reviews, user });
+        }
+
+        // We move the month to the next one
+        currentMonth = moment(review.submittedAt).startOf("month");
+        // We reset the monthly review object
+        reviewsPerUser = new Map<string, number>();
+        // We add a review to the current user
+        reviewsPerUser.set(review.author.login, 1);
+      }
+    }
+
+    return monthsWithMatches;
   }
 }

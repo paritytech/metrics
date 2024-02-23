@@ -22,6 +22,7 @@ export interface PullRequestMetrics {
     /** Average lines changed per month */
     linesChanged: MonthWithMatch[];
   };
+  reviewers: {month:string, user:string, reviews:number}[];
 }
 
 export interface IssuesMetrics {
