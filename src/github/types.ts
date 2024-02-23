@@ -29,7 +29,7 @@ export interface PullRequestNode {
     nodes: {
       submittedAt: string;
       state: "APPROVED" | "COMMENTED" | "CHANGES_REQUESTED";
-      author: { login: string };
+      author: { login: string; avatarUrl: string };
     }[];
   };
 }

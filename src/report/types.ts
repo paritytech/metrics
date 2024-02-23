@@ -22,7 +22,7 @@ export interface PullRequestMetrics {
     /** Average lines changed per month */
     linesChanged: MonthWithMatch[];
   };
-  reviewers: { month: string; user: string; reviews: number }[];
+  reviewers: { month: string; user: string; reviews: number; avatar: string }[];
 }
 
 export interface IssuesMetrics {

@@ -140,9 +140,9 @@ export class PullRequestAnalytics {
           : undefined,
         review: timeToFirstReview
           ? {
-              date: firstReview as string,
-              daysSinceCreation: timeToFirstReview,
-            }
+            date: firstReview as string,
+            daysSinceCreation: timeToFirstReview,
+          }
           : undefined,
         additions: pr.additions,
         deletions: pr.deletions,
@@ -175,19 +175,17 @@ export class PullRequestAnalytics {
         reviewsPerUser.set(review.author.login, authorReviews + 1);
       } else {
         // If the month is over, we check who reviewed the most that month
-        let topReviewer: [string, number] = ["", -1];
+        let topReviewer: { user: string, reviews: number, avatar: string } = { user: "", reviews: -1, avatar: "" };
         for (const [user, nrOfReviews] of reviewsPerUser) {
-          if (nrOfReviews > topReviewer[1]) {
-            topReviewer = [user, nrOfReviews];
+          if (nrOfReviews > topReviewer.reviews) {
+            topReviewer = { user, reviews: nrOfReviews, avatar: review.author.avatarUrl };
           }
         }
         // If there was at least one review, we add it to that month's top reviewer
-        if (topReviewer[1] > 0) {
-          const [user, nrOfReviews] = topReviewer;
+        if (topReviewer.reviews > 0) {
           monthsWithMatches.push({
             month: currentMonth.format("MMM YYYY"),
-            reviews: nrOfReviews,
-            user,
+            ...topReviewer
           });
         }
 
