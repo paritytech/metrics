@@ -144,8 +144,16 @@ const generatePrSummary = (
   if (reviewerOfTheMonth)
     text = text.addHeading("Reviewer of the month", 4)
       .addImage(reviewerOfTheMonth.avatar ?? "", `${reviewerOfTheMonth.user}'s avatar`)
-      .addRaw(`@${reviewerOfTheMonth.user} with ${reviewerOfTheMonth.reviews} reviews!`);
+      .addRaw(`@${reviewerOfTheMonth.user} with ${reviewerOfTheMonth.reviews} reviews!`)
+      .addEOL();
 
+  if (prMetrics.topReviewer) {
+    const { topReviewer } = prMetrics;
+    text = text.addHeading("Top reviewer", 3)
+      .addEOL().addImage(topReviewer.avatar, `${topReviewer.user}'s avatar`)
+      .addEOL()
+      .addRaw(`@${topReviewer.user} with a **total of ${topReviewer.reviews} reviews**!`);
+  }
   return text;
 };
 
