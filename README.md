@@ -5,6 +5,7 @@ Get GitHub metrics for a repository.
 Supports obtaining metrics from:
 
 - Pull Requests
+- Issues
 
 ## To start
 
