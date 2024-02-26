@@ -1,3 +1,5 @@
+export type Reviewer = { user: string; avatar: string; reviews: number };
+
 export interface PullRequestMetrics {
   open: number;
   closed: number;
@@ -22,6 +24,8 @@ export interface PullRequestMetrics {
     /** Average lines changed per month */
     linesChanged: MonthWithMatch[];
   };
+  reviewers: ({ month: string } & Reviewer)[];
+  topReviewer?: Reviewer | null;
 }
 
 export interface IssuesMetrics {

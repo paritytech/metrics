@@ -27,9 +27,9 @@ export interface PullRequestNode {
   reviews: {
     totalCount: number;
     nodes: {
-      submittedAt: string;
+      submittedAt: string | null;
       state: "APPROVED" | "COMMENTED" | "CHANGES_REQUESTED";
-      author: { login: string };
+      author: { login: string; avatarUrl: string };
     }[];
   };
 }

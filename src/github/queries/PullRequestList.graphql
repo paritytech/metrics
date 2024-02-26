@@ -23,6 +23,7 @@ query PullRequests($cursor: String, $owner: String!, $repo: String!) {
                 state
                 author {
                   login
+                  avatarUrl
                 }
               }
             }

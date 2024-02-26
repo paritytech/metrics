@@ -28,7 +28,11 @@ const generatePrSummary = (
   "Closed" : ${prMetrics.closed}
   \`\`\``;
 
-  text = summary.addHeading("PRs states", 3).addEOL().addRaw(prChart).addEOL();
+  text = summary
+    .addHeading("Pull Requests", 1)
+    .addEOL()
+    .addRaw(prChart)
+    .addEOL();
 
   const totalAverageTimeToClose = calculateAverage(
     prMetrics.monthlyAverages.mergeTime.map(([_, average]) => average),
@@ -42,14 +46,14 @@ const generatePrSummary = (
 
   const averageReviews = `\`\`\`mermaid
     gantt
-        title Average Reviews time (days)
+        title Average PR time (days)
         dateFormat  X
         axisFormat %s
-        section Time to close
+        section To close
         ${totalAverageTimeToClose} : 0, ${totalAverageTimeToClose}
-        section Time to first review
+        section To first review
         ${totalAverageTimeToFirstReview} : 0, ${totalAverageTimeToFirstReview}
-        section Average reviews
+        section Reviews per PR
         ${totalAverageReviews} : 0, ${totalAverageReviews}
   \`\`\``;
 
@@ -116,6 +120,50 @@ const generatePrSummary = (
     )
     .addEOL();
 
+  // Top reviewers
+  const topReviewers = `\`\`\`mermaid
+  gantt
+    title Top reviewer per month
+    dateFormat X
+    axisFormat %s
+    ${prMetrics.reviewers
+      .map(
+        ({ month, user, reviews }) =>
+          `section ${month}\n    ${user} : 0, ${reviews}`,
+      )
+      .join("\n    ")}
+  \`\`\``;
+
+  text = text
+    .addHeading("Top reviewers", 3)
+    .addEOL()
+    .addRaw(topReviewers)
+    .addEOL();
+
+  const reviewerOfTheMonth = prMetrics.reviewers.at(-1);
+  if (reviewerOfTheMonth)
+    text = text
+      .addHeading("Reviewer of the month", 4)
+      .addImage(
+        reviewerOfTheMonth.avatar ?? "",
+        `${reviewerOfTheMonth.user}'s avatar`,
+      )
+      .addRaw(
+        `@${reviewerOfTheMonth.user} with ${reviewerOfTheMonth.reviews} reviews!`,
+      )
+      .addEOL();
+
+  if (prMetrics.topReviewer) {
+    const { topReviewer } = prMetrics;
+    text = text
+      .addHeading("Top reviewer", 3)
+      .addEOL()
+      .addImage(topReviewer.avatar, `${topReviewer.user}'s avatar`)
+      .addEOL()
+      .addRaw(
+        `@${topReviewer.user} with a **total of ${topReviewer.reviews} reviews**!`,
+      );
+  }
   return text;
 };
 
@@ -129,11 +177,7 @@ const generateIssueSummary = (
   "Closed" : ${issueMetrics.closed}
   \`\`\``;
 
-  text = summary
-    .addHeading("Issues states", 3)
-    .addEOL()
-    .addRaw(prChart)
-    .addEOL();
+  text = summary.addHeading("Issues", 1).addEOL().addRaw(prChart).addEOL();
 
   const totalAverageTimeToClose = calculateAverage(
     issueMetrics.monthlyAverages.closeTime.map(([_, average]) => average),

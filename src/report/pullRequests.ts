@@ -7,7 +7,7 @@ import {
   calculateEventsPerMonth,
   extractMatchesFromDate,
 } from "../util";
-import { DurationWithInitialDate, PullRequestMetrics } from "./types";
+import { DurationWithInitialDate, PullRequestMetrics, Reviewer } from "./types";
 
 interface PullRequestInfo {
   number: number;
@@ -26,7 +26,7 @@ export class PullRequestAnalytics {
   constructor(
     private readonly api: RepositoryApi,
     private readonly logger: ActionLogger,
-    private readonly repo: { owner: string; repo: string },
+    repo: { owner: string; repo: string },
   ) {
     logger.debug(`Reporter has been configured for ${repo.owner}/${repo.repo}`);
   }
@@ -44,7 +44,18 @@ export class PullRequestAnalytics {
     const monthlyMetrics = this.generateMonthlyMetrics(prs);
     const monthlyAverages = this.generateMonthlyAverages(prs);
 
-    return { ...prMetric, monthlyMetrics, monthlyAverages };
+    const reviewList = prList.flatMap((pr) => pr.reviews.nodes);
+    const reviewers = this.getTopMonthlyReviewers(reviewList);
+
+    const topReviewer = this.getTopReviewer(reviewList);
+
+    return {
+      ...prMetric,
+      monthlyMetrics,
+      monthlyAverages,
+      reviewers,
+      topReviewer,
+    };
   }
 
   generateMonthlyMetrics(
@@ -147,5 +158,114 @@ export class PullRequestAnalytics {
     }
 
     return averages;
+  }
+
+  /** Returns the reviewer who gave the biggest amount of reviews per month */
+  getTopMonthlyReviewers(
+    reviews: PullRequestNode["reviews"]["nodes"],
+  ): PullRequestMetrics["reviewers"] {
+    if (reviews.length === 0) {
+      return [];
+    }
+    reviews.sort((a, b) =>
+      moment(a.submittedAt as string).diff(moment(b.submittedAt as string)),
+    );
+
+    // We get the month of the first date
+    let currentMonth = moment(reviews[0].submittedAt).startOf("month");
+
+    const monthsWithMatches: PullRequestMetrics["reviewers"] = [];
+    // let reviewsPerUser: Map<string, number> = new Map<string, number>();
+    let reviewsPerUser: { user: string; reviews: number; avatar: string }[] =
+      [];
+
+    for (const review of reviews) {
+      if (!review.submittedAt) {
+        this.logger.debug(
+          `Skipping review from ${review.author.login} as it is has a null date`,
+        );
+        continue;
+      }
+      // If it happened in the same month
+      if (currentMonth.diff(moment(review.submittedAt), "month") == 0) {
+        const reviewerIndex = reviewsPerUser
+          .map((u) => u.user)
+          .indexOf(review.author.login);
+        if (reviewerIndex > -1) {
+          // If the user exists, we increment his reviews
+          reviewsPerUser[reviewerIndex].reviews += 1;
+        } else {
+          // Else we push a new user
+          reviewsPerUser.push({
+            user: review.author.login,
+            reviews: 1,
+            avatar: review.author.avatarUrl,
+          });
+        }
+      } else {
+        // If the month is over, we check who reviewed the most that month
+        let topReviewer: { user: string; reviews: number; avatar: string } = {
+          user: "",
+          reviews: -1,
+          avatar: "",
+        };
+
+        for (const monthlyReviewer of reviewsPerUser) {
+          if (monthlyReviewer.reviews > topReviewer.reviews) {
+            topReviewer = monthlyReviewer;
+          }
+        }
+        // If there was at least one review, we add it to that month's top reviewer
+        if (topReviewer.reviews > 0) {
+          monthsWithMatches.push({
+            month: currentMonth.format("MMM YYYY"),
+            ...topReviewer,
+          });
+        }
+
+        // We move the month to the next one
+        currentMonth = moment(review.submittedAt).startOf("month");
+        // We reset the monthly review object
+        reviewsPerUser = [];
+        // We add a review to the current user
+        reviewsPerUser.push({
+          user: review.author.login,
+          reviews: 1,
+          avatar: review.author.avatarUrl,
+        });
+      }
+    }
+
+    return monthsWithMatches;
+  }
+
+  /** Returns the reviewer who gave the biggest amount of reviews */
+  getTopReviewer(
+    reviews: PullRequestNode["reviews"]["nodes"],
+  ): PullRequestMetrics["topReviewer"] {
+    if (reviews.length === 0) {
+      return null;
+    }
+
+    const usersWithReviews: Reviewer[] = [];
+    for (const {
+      author: { login, avatarUrl },
+    } of reviews) {
+      const index = usersWithReviews.map((u) => u.user).indexOf(login);
+      if (index > -1) {
+        usersWithReviews[index].reviews += 1;
+      } else {
+        usersWithReviews.push({ user: login, avatar: avatarUrl, reviews: 1 });
+      }
+    }
+
+    let topReviewer: PullRequestMetrics["topReviewer"] = null;
+    for (const candidate of usersWithReviews) {
+      if (!topReviewer || candidate.reviews > topReviewer.reviews) {
+        topReviewer = candidate;
+      }
+    }
+
+    return topReviewer;
   }
 }
