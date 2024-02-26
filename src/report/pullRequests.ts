@@ -45,7 +45,7 @@ export class PullRequestAnalytics {
     const monthlyAverages = this.generateMonthlyAverages(prs);
 
     const reviewList = prList.flatMap((pr) => pr.reviews.nodes);
-    const reviewers = this.getMonthlyReviewers(reviewList);
+    const reviewers = this.getTopMonthlyReviewers(reviewList);
 
     const topReviewer = this.getTopReviewer(reviewList);
 
@@ -161,7 +161,7 @@ export class PullRequestAnalytics {
   }
 
   /** Returns the reviewer who gave the biggest amount of reviews per month */
-  getMonthlyReviewers(
+  getTopMonthlyReviewers(
     reviews: PullRequestNode["reviews"]["nodes"],
   ): PullRequestMetrics["reviewers"] {
     if (reviews.length === 0) {
