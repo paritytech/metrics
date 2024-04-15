@@ -38,4 +38,10 @@ query PullRequests($cursor: String, $owner: String!, $repo: String!) {
       }
     }
   }
+  rateLimit {
+    limit
+    remaining
+    used
+    resetAt
+  }
 }

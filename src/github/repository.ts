@@ -6,6 +6,7 @@ import {
   IssueNode,
   PageInfoQuery,
   PullRequestNode,
+  RateLimitsQuery,
 } from "./types";
 
 interface PullRequestList {
@@ -16,6 +17,7 @@ interface PullRequestList {
       pageInfo: PageInfoQuery;
     };
   };
+  rateLimit: RateLimitsQuery
 }
 
 interface IssueList {
