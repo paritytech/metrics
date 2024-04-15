@@ -57,6 +57,7 @@ export class RepositoryApi {
           ...this.repo,
         },
       );
+      this.logger.info(`Rate limits are ${JSON.stringify(query.rateLimit)}`);
       const totalPages =
         Math.floor(query.repository.pullRequests.totalCount / 100) + 1;
       this.logger.info(`Querying page ${++currentPage}/${totalPages}`);
