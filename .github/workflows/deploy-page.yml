@@ -4,8 +4,17 @@ on:
   push:
     branches: ["main"]
   workflow_dispatch:
-  schedule:
-    - cron: "0 12 1 * *"
+    inputs:
+      org:
+        description: 'Organization'
+        type: string
+        required: false
+        default: "polkadot-fellows"
+      repo:
+        description: 'Repository'
+        type: string
+        required: false
+        default: "runtimes"
 
 permissions:
   pages: write
@@ -21,8 +30,8 @@ jobs:
         id: metric
         with:
           GITHUB_TOKEN: ${{ github.token }}
-          owner: polkadot-fellows
-          repo: runtimes
+          owner: ${{ github.event.inputs.org }}
+          repo: ${{ github.event.inputs.repo }}
       - name: Setup Pages
         uses: actions/configure-pages@v2
       - name: Upload artifact
