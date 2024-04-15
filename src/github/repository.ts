@@ -55,6 +55,7 @@ export class RepositoryApi {
           ...this.repo,
         },
       );
+
       const totalPages =
         Math.floor(query.repository.pullRequests.totalCount / 100) + 1;
       this.logger.info(`Querying page ${++currentPage}/${totalPages}`);
@@ -62,6 +63,12 @@ export class RepositoryApi {
       prs.push(...nodes);
       hasNextPage = pageInfo.hasNextPage;
       cursor = pageInfo.endCursor;
+      if (currentPage % 5 === 0) {
+        this.logger.debug("Pausing for one minute to not hit secondary limits");
+        await new Promise<void>((resolve) =>
+          setTimeout(() => resolve(), 60_000),
+        );
+      }
     } while (hasNextPage);
 
     this.logger.info(`Found information for ${prs.length} pull requests`);
@@ -93,6 +100,13 @@ export class RepositoryApi {
       issues.push(...nodes);
       hasNextPage = pageInfo.hasNextPage;
       cursor = pageInfo.endCursor;
+
+      if (currentPage % 5 === 0) {
+        this.logger.debug("Pausing for one minute to not hit secondary limits");
+        await new Promise<void>((resolve) =>
+          setTimeout(() => resolve(), 60_000),
+        );
+      }
     } while (hasNextPage);
 
     this.logger.info(`Found information for ${issues.length} issues`);

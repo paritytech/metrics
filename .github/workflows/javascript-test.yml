@@ -10,14 +10,14 @@ jobs:
     runs-on: ubuntu-latest
     name: running ${{ matrix.command }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.1.1
       - name: Use node 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.0.2
         with:
           node-version: 20
       - name: Cache node modules
         id: cache-npm
-        uses: actions/cache@v3
+        uses: actions/cache@v4.0.2
         env:
           cache-name: cache-node-modules
         with:

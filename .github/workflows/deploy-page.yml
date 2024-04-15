@@ -1,4 +1,4 @@
-name: Deploy page
+name: Generate metrics
 
 on:
   push:
@@ -6,12 +6,12 @@ on:
   workflow_dispatch:
     inputs:
       org:
-        description: 'Organization'
+        description: "Organization"
         type: string
         required: false
         default: "polkadot-fellows"
       repo:
-        description: 'Repository'
+        description: "Repository"
         type: string
         required: false
         default: "runtimes"
@@ -33,11 +33,11 @@ jobs:
           owner: ${{ github.event.inputs.org }}
           repo: ${{ github.event.inputs.repo }}
       - name: Setup Pages
-        uses: actions/configure-pages@v2
+        uses: actions/configure-pages@v5.0.0
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v3.0.1
         with:
           path: ./
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v4.0.5
