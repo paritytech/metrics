@@ -1,3 +1,4 @@
+import { secondsToTime, waitUntilTime } from "../report/utils";
 import ISSUE_LIST_QUERY from "./queries/IssueList";
 import PULL_REQUEST_LIST_QUERY from "./queries/PullRequestList";
 import {
@@ -65,6 +66,11 @@ export class RepositoryApi {
       prs.push(...nodes);
       hasNextPage = pageInfo.hasNextPage;
       cursor = pageInfo.endCursor;
+      if (query.rateLimit.remaining < 300) {
+        const {resetAt} = query.rateLimit;
+        this.logger.info(`About to reach limit. Limit resets at ${resetAt}. Waiting for ${secondsToTime(resetAt)}`);
+        await waitUntilTime(resetAt);
+      }
     } while (hasNextPage);
 
     this.logger.info(`Found information for ${prs.length} pull requests`);
