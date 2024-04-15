@@ -66,6 +66,10 @@ export class RepositoryApi {
       prs.push(...nodes);
       hasNextPage = pageInfo.hasNextPage;
       cursor = pageInfo.endCursor;
+      if(currentPage % 5 === 0){
+        this.logger.debug("Pausing for one minute to not hit secondary limits")
+        await new Promise<void>(resolve => setTimeout(() => resolve(), 60_000));
+      }
       if (query.rateLimit.remaining < 300) {
         const {resetAt} = query.rateLimit;
         this.logger.info(`About to reach limit. Limit resets at ${resetAt}. Waiting for ${secondsToTime(resetAt)}`);
