@@ -1,4 +1,4 @@
-name: Deploy page
+name: Generate metrics
 
 on:
   push:
