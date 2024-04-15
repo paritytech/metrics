@@ -16,13 +16,6 @@ export interface PageInfoQuery {
   hasPreviousPage: boolean;
 }
 
-export interface RateLimitsQuery {
-  limit: number,
-  remaining: number,
-  used: number,
-  resetAt: string
-}
-
 export interface PullRequestNode {
   title: string;
   number: number;
