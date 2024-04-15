@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Get repository metrics
     steps:
-      - uses: paritytech-stg/metrics@main
+      - uses: paritytech/metrics@main
         name: Fetch metrics
         id: metric
         with:
