@@ -6,12 +6,12 @@ on:
   workflow_dispatch:
     inputs:
       org:
-        description: 'Organization'
+        description: "Organization"
         type: string
         required: false
         default: "polkadot-fellows"
       repo:
-        description: 'Repository'
+        description: "Repository"
         type: string
         required: false
         default: "runtimes"

@@ -48,14 +48,14 @@ export class RepositoryApi {
       `Extracting all PR information from ${this.repo.owner}/${this.repo.repo}`,
     );
     do {
-      let query: PullRequestList= await this.api.graphql<PullRequestList>(
+      const query: PullRequestList = await this.api.graphql<PullRequestList>(
         PULL_REQUEST_LIST_QUERY,
         {
           cursor,
           ...this.repo,
         },
       );
-   
+
       const totalPages =
         Math.floor(query.repository.pullRequests.totalCount / 100) + 1;
       this.logger.info(`Querying page ${++currentPage}/${totalPages}`);
@@ -63,9 +63,11 @@ export class RepositoryApi {
       prs.push(...nodes);
       hasNextPage = pageInfo.hasNextPage;
       cursor = pageInfo.endCursor;
-      if(currentPage % 5 === 0){
-        this.logger.debug("Pausing for one minute to not hit secondary limits")
-        await new Promise<void>(resolve => setTimeout(() => resolve(), 60_000));
+      if (currentPage % 5 === 0) {
+        this.logger.debug("Pausing for one minute to not hit secondary limits");
+        await new Promise<void>((resolve) =>
+          setTimeout(() => resolve(), 60_000),
+        );
       }
     } while (hasNextPage);
 
@@ -84,7 +86,7 @@ export class RepositoryApi {
       `Extracting all issue information from ${this.repo.owner}/${this.repo.repo}`,
     );
     do {
-      let query:IssueList = await this.api.graphql<IssueList>(
+      const query: IssueList = await this.api.graphql<IssueList>(
         ISSUE_LIST_QUERY,
         {
           cursor,
@@ -99,9 +101,11 @@ export class RepositoryApi {
       hasNextPage = pageInfo.hasNextPage;
       cursor = pageInfo.endCursor;
 
-      if(currentPage % 5 === 0){
-        this.logger.debug("Pausing for one minute to not hit secondary limits")
-        await new Promise<void>(resolve => setTimeout(() => resolve(), 60_000));
+      if (currentPage % 5 === 0) {
+        this.logger.debug("Pausing for one minute to not hit secondary limits");
+        await new Promise<void>((resolve) =>
+          setTimeout(() => resolve(), 60_000),
+        );
       }
     } while (hasNextPage);
 
