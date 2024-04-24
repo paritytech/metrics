@@ -24,6 +24,16 @@ export interface PullRequestMetrics {
     /** Average lines changed per month */
     linesChanged: MonthWithMatch[];
   };
+  monthlyMedians: {
+    /** Average reviews per month */
+    reviews: MonthWithMatch[];
+    /** Average time to merge */
+    mergeTime: MonthWithMatch[];
+    /** Average time to first review per month */
+    timeToFirstReview: MonthWithMatch[];
+    /** Average lines changed per month */
+    linesChanged: MonthWithMatch[];
+  }
   reviewers: ({ month: string } & Reviewer)[];
   topReviewer?: Reviewer | null;
 }

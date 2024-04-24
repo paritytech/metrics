@@ -6,6 +6,7 @@ import {
   calculateAveragePerMonth,
   calculateEventsPerMonth,
   extractMatchesFromDate,
+  extractMediansFromDate,
 } from "../util";
 import { DurationWithInitialDate, PullRequestMetrics, Reviewer } from "./types";
 
@@ -47,12 +48,15 @@ export class PullRequestAnalytics {
     const reviewList = prList.flatMap((pr) => pr.reviews.nodes);
     const reviewers = this.getTopMonthlyReviewers(reviewList);
 
+    const monthlyMedians = this.generateMonthlyMedians(prs);
+
     const topReviewer = this.getTopReviewer(reviewList);
 
     return {
       ...prMetric,
       monthlyMetrics,
       monthlyAverages,
+      monthlyMedians,
       reviewers,
       topReviewer,
     };
@@ -127,6 +131,49 @@ export class PullRequestAnalytics {
     };
   }
 
+  generateMonthlyMedians(
+    prs: PullRequestInfo[],
+  ): PullRequestMetrics["monthlyMedians"] {
+    this.logger.debug("Calculating monthly median");
+    const averageTimeToFirstReview = extractMediansFromDate(
+      prs
+        .map(({ review }) => review)
+        .filter((r) => !!r) as DurationWithInitialDate[],
+      (value) => value.daysSinceCreation,
+    );
+
+    const averageTimeToClose = extractMediansFromDate(
+      prs
+        .map(({ close }) => close)
+        .filter((c) => !!c) as DurationWithInitialDate[],
+      (value) => value.daysSinceCreation,
+    );
+
+    const linesChanged = extractMediansFromDate(
+      prs.map((pr) => {
+        return {
+          date: pr.creation,
+          daysSinceCreation: Math.abs(pr.additions - pr.deletions),
+        };
+      }),
+      (value) => value.daysSinceCreation,
+    );
+
+    const averageReviewsPerMonth = extractMediansFromDate(
+      prs.map((pr) => {
+        return { date: pr.creation, reviews: pr.reviews };
+      }),
+      (reviews) => reviews.reviews,
+    );
+
+    return {
+      timeToFirstReview: averageTimeToFirstReview,
+      mergeTime: averageTimeToClose,
+      linesChanged,
+      reviews: averageReviewsPerMonth,
+    };
+  }
+
   getPullRequestAverages(prList: PullRequestNode[]): PullRequestInfo[] {
     const averages: PullRequestInfo[] = [];
 
@@ -147,9 +194,9 @@ export class PullRequestAnalytics {
           : undefined,
         review: timeToFirstReview
           ? {
-              date: firstReview as string,
-              daysSinceCreation: timeToFirstReview,
-            }
+            date: firstReview as string,
+            daysSinceCreation: timeToFirstReview,
+          }
           : undefined,
         additions: pr.additions,
         deletions: pr.deletions,

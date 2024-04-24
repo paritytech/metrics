@@ -61,6 +61,44 @@ export const extractMatchesFromDate = <T extends { date: string }>(
   return monthsWithMatches;
 };
 
+export const extractMediansFromDate = <T extends { date: string }>(
+  dates: T[],
+  getAmount: (value: T) => number,
+): MonthWithMatch[] => {
+  if (dates.length === 0) {
+    return [];
+  }
+  dates.sort((a, b) => (a.date > b.date ? 1 : -1));
+
+  // We get the month of the first date
+  let currentMonth = moment(dates[0].date).startOf("month");
+
+  const monthsWithMatches: MonthWithMatch[] = [];
+
+  let currentMonthValues: number[] = [];
+  for (const dateObj of dates) {
+    const amountToAdd = getAmount(dateObj);
+    // If it happened in the same month
+    if (currentMonth.diff(moment(dateObj.date), "month") == 0) {
+      currentMonthValues.push(amountToAdd);
+    } else {
+
+      // We get the element in the center
+      const median = currentMonthValues.sort()[Math.round((currentMonthValues.length - 1) / 2)]
+      // We push the previous match and reset it
+      monthsWithMatches.push([currentMonth.format("MMM YYYY"), median]);
+
+      // We change the currentMonth variable to the following one
+      currentMonth = moment(dateObj.date).startOf("month");
+
+      // We reset the collection of time with the new value
+      currentMonthValues = [amountToAdd];
+    }
+  }
+
+  return monthsWithMatches;
+};
+
 /**
  * Calculates how many times a date is repeated in a given month
  */
@@ -83,6 +121,8 @@ export const calculateAveragePerMonth = <T extends { date: string }>(
   datesWithValue: T[],
   getAmount: (value: T) => number,
 ): MonthWithMatch[] => extractMatchesFromDate(datesWithValue, getAmount, true);
+
+
 
 /** Calculates the round number average over an array of numbers */
 export const calculateAverage = (values: number[]): number =>
