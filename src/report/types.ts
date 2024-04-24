@@ -33,7 +33,7 @@ export interface PullRequestMetrics {
     timeToFirstReview: MonthWithMatch[];
     /** Median lines changed per month */
     linesChanged: MonthWithMatch[];
-  }
+  };
   reviewers: ({ month: string } & Reviewer)[];
   topReviewer?: Reviewer | null;
 }

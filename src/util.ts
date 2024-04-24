@@ -82,9 +82,11 @@ export const extractMediansFromDate = <T extends { date: string }>(
     if (currentMonth.diff(moment(dateObj.date), "month") == 0) {
       currentMonthValues.push(amountToAdd);
     } else {
-
       // We get the element in the center
-      const median = currentMonthValues.sort()[Math.round((currentMonthValues.length - 1) / 2)]
+      const median =
+        currentMonthValues.sort()[
+          Math.round((currentMonthValues.length - 1) / 2)
+        ];
       // We push the previous match and reset it
       monthsWithMatches.push([currentMonth.format("MMM YYYY"), median]);
 
@@ -121,8 +123,6 @@ export const calculateAveragePerMonth = <T extends { date: string }>(
   datesWithValue: T[],
   getAmount: (value: T) => number,
 ): MonthWithMatch[] => extractMatchesFromDate(datesWithValue, getAmount, true);
-
-
 
 /** Calculates the round number average over an array of numbers */
 export const calculateAverage = (values: number[]): number =>

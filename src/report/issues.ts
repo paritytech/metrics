@@ -13,7 +13,7 @@ export class IssueAnalytics {
   constructor(
     private readonly api: RepositoryApi,
     private readonly logger: ActionLogger,
-  ) { }
+  ) {}
 
   async getAnalytics(): Promise<IssuesMetrics> {
     const issues = await this.api.getIssues();
@@ -105,9 +105,7 @@ export class IssueAnalytics {
     };
   }
 
-  generateMonthlyMedians(
-    issues: IssueNode[],
-  ): IssuesMetrics["monthlyMedians"] {
+  generateMonthlyMedians(issues: IssueNode[]): IssuesMetrics["monthlyMedians"] {
     this.logger.debug("Calculating monthly averages");
     const averageTimeToFirstComment = calculateAveragePerMonth(
       issues

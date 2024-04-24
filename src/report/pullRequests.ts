@@ -194,9 +194,9 @@ export class PullRequestAnalytics {
           : undefined,
         review: timeToFirstReview
           ? {
-            date: firstReview as string,
-            daysSinceCreation: timeToFirstReview,
-          }
+              date: firstReview as string,
+              daysSinceCreation: timeToFirstReview,
+            }
           : undefined,
         additions: pr.additions,
         deletions: pr.deletions,

@@ -237,9 +237,7 @@ const generateIssueSummary = (
     issueMetrics.monthlyMedians.closeTime.map(([_, median]) => median),
   );
   const totalMedianTimeToFirstComment = calculateAverage(
-    issueMetrics.monthlyMedians.timeToFirstComment.map(
-      ([_, median]) => median,
-    ),
+    issueMetrics.monthlyMedians.timeToFirstComment.map(([_, median]) => median),
   );
   const totalMedianComments = calculateAverage(
     issueMetrics.monthlyMedians.comments.map(([_, median]) => median),
