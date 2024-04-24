@@ -34,6 +34,60 @@ const generatePrSummary = (
     .addRaw(prChart)
     .addEOL();
 
+  const totalMedianTimeToClose = calculateAverage(
+    prMetrics.monthlyMedians.mergeTime.map(([_, median]) => median),
+  );
+  const totalMedianTimeToFirstReview = calculateAverage(
+    prMetrics.monthlyMedians.timeToFirstReview.map(([_, median]) => median),
+  );
+  const totalMedianReviews = calculateAverage(
+    prMetrics.monthlyMedians.reviews.map(([_, median]) => median),
+  );
+
+  const medianReviews = `\`\`\`mermaid
+    gantt
+        title Average PR time (days)
+        dateFormat  X
+        axisFormat %s
+        section To close
+        ${totalMedianTimeToClose} : 0, ${totalMedianTimeToClose}
+        section To first review
+        ${totalMedianTimeToFirstReview} : 0, ${totalMedianTimeToFirstReview}
+        section Reviews per PR
+        ${totalMedianReviews} : 0, ${totalMedianReviews}
+  \`\`\``;
+
+  text = text
+    .addHeading("PR review median", 3)
+    .addEOL()
+    .addRaw(medianReviews)
+    .addEOL();
+
+  text = text
+    .addHeading("Median duration per month", 3)
+    .addEOL()
+    .addRaw(
+      monthWithMatchToGanttChart(
+        "Median time to first review (days)",
+        prMetrics.monthlyMedians.timeToFirstReview,
+      ),
+    )
+    .addEOL()
+    .addRaw(
+      monthWithMatchToGanttChart(
+        "Median time to merge (days)",
+        prMetrics.monthlyMedians.mergeTime,
+      ),
+    )
+    .addEOL()
+    .addRaw(
+      monthWithMatchToGanttChart(
+        "Median reviews per PR per month",
+        prMetrics.monthlyMedians.reviews,
+      ),
+    )
+    .addEOL();
+
   const totalAverageTimeToClose = calculateAverage(
     prMetrics.monthlyAverages.mergeTime.map(([_, average]) => average),
   );
