@@ -25,13 +25,13 @@ export interface PullRequestMetrics {
     linesChanged: MonthWithMatch[];
   };
   monthlyMedians: {
-    /** Average reviews per month */
+    /** Median reviews per month */
     reviews: MonthWithMatch[];
-    /** Average time to merge */
+    /** Median time to merge */
     mergeTime: MonthWithMatch[];
-    /** Average time to first review per month */
+    /** Median time to first review per month */
     timeToFirstReview: MonthWithMatch[];
-    /** Average lines changed per month */
+    /** Median lines changed per month */
     linesChanged: MonthWithMatch[];
   }
   reviewers: ({ month: string } & Reviewer)[];
@@ -57,6 +57,14 @@ export interface IssuesMetrics {
     /** Average time to close */
     closeTime: MonthWithMatch[];
     /** Average time to first comment per month */
+    timeToFirstComment: MonthWithMatch[];
+  };
+  monthlyMedians: {
+    /** Median comments per month */
+    comments: MonthWithMatch[];
+    /** Median time to close */
+    closeTime: MonthWithMatch[];
+    /** Median time to first comment per month */
     timeToFirstComment: MonthWithMatch[];
   };
 }

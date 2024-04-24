@@ -162,7 +162,7 @@ const generatePrSummary = (
     .addRaw(
       monthWithMatchToGanttChart(
         "Lines changed per month",
-        prMetrics.monthlyAverages.linesChanged,
+        prMetrics.monthlyMedians.linesChanged,
       ),
     )
     .addEOL()
