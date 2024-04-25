@@ -44,17 +44,32 @@ const generatePrSummary = (
     prMetrics.monthlyMedians.reviews.map(([_, median]) => median),
   );
 
+
+
+  const totalAverageTimeToClose = calculateAverage(
+    prMetrics.monthlyAverages.mergeTime.map(([_, average]) => average),
+  );
+  const totalAverageTimeToFirstReview = calculateAverage(
+    prMetrics.monthlyAverages.timeToFirstReview.map(([_, average]) => average),
+  );
+  const totalAverageReviews = calculateAverage(
+    prMetrics.monthlyAverages.reviews.map(([_, average]) => average),
+  );
+
   const medianReviews = `\`\`\`mermaid
     gantt
         title Average PR time (days)
         dateFormat  X
         axisFormat %s
         section To close
-        ${totalMedianTimeToClose} : 0, ${totalMedianTimeToClose}
+        Average ${totalAverageTimeToClose} : 0, ${totalAverageTimeToClose}
+        Median ${totalMedianTimeToClose} : 0, ${totalMedianTimeToClose}
         section To first review
-        ${totalMedianTimeToFirstReview} : 0, ${totalMedianTimeToFirstReview}
+        Average ${totalAverageTimeToFirstReview} : 0, ${totalAverageTimeToFirstReview}
+        Median ${totalMedianTimeToFirstReview} : 0, ${totalMedianTimeToFirstReview}
         section Reviews per PR
-        ${totalMedianReviews} : 0, ${totalMedianReviews}
+        Average ${totalAverageReviews} : 0, ${totalAverageReviews}
+        Median ${totalMedianReviews} : 0, ${totalMedianReviews}
   \`\`\``;
 
   text = text
@@ -87,16 +102,6 @@ const generatePrSummary = (
       ),
     )
     .addEOL();
-
-  const totalAverageTimeToClose = calculateAverage(
-    prMetrics.monthlyAverages.mergeTime.map(([_, average]) => average),
-  );
-  const totalAverageTimeToFirstReview = calculateAverage(
-    prMetrics.monthlyAverages.timeToFirstReview.map(([_, average]) => average),
-  );
-  const totalAverageReviews = calculateAverage(
-    prMetrics.monthlyAverages.reviews.map(([_, average]) => average),
-  );
 
   const averageReviews = `\`\`\`mermaid
     gantt
@@ -243,15 +248,29 @@ const generateIssueSummary = (
     issueMetrics.monthlyMedians.comments.map(([_, median]) => median),
   );
 
+  const totalAverageTimeToClose = calculateAverage(
+    issueMetrics.monthlyAverages.closeTime.map(([_, average]) => average),
+  );
+  const totalAverageTimeToFirstComment = calculateAverage(
+    issueMetrics.monthlyAverages.timeToFirstComment.map(
+      ([_, average]) => average,
+    ),
+  );
+  const totalAverageComments = calculateAverage(
+    issueMetrics.monthlyAverages.comments.map(([_, average]) => average),
+  );
+
   const medianIssueState = `\`\`\`mermaid
     gantt
         title Average activity time (days)
         dateFormat  X
         axisFormat %s
         section Time to close
-        ${totalMedianTimeToClose} : 0, ${totalMedianTimeToClose}
+        Median : 0, ${totalMedianTimeToClose}
+        Average : 0, ${totalAverageTimeToClose}
         section Time to first comment
-        ${totalMedianTimeToFirstComment} : 0, ${totalMedianTimeToFirstComment}
+        Median : 0, ${totalMedianTimeToFirstComment}
+        Average : 0, ${totalAverageTimeToFirstComment}
         section Average comments
         ${totalMedianComments} : 0, ${totalMedianComments}
   \`\`\``;
@@ -287,35 +306,8 @@ const generateIssueSummary = (
     )
     .addEOL();
 
-  const totalAverageTimeToClose = calculateAverage(
-    issueMetrics.monthlyAverages.closeTime.map(([_, average]) => average),
-  );
-  const totalAverageTimeToFirstComment = calculateAverage(
-    issueMetrics.monthlyAverages.timeToFirstComment.map(
-      ([_, average]) => average,
-    ),
-  );
-  const totalAverageComments = calculateAverage(
-    issueMetrics.monthlyAverages.comments.map(([_, average]) => average),
-  );
-
-  const averageIssueState = `\`\`\`mermaid
-    gantt
-        title Average activity time (days)
-        dateFormat  X
-        axisFormat %s
-        section Time to close
-        ${totalAverageTimeToClose} : 0, ${totalAverageTimeToClose}
-        section Time to first comment
-        ${totalAverageTimeToFirstComment} : 0, ${totalAverageTimeToFirstComment}
-        section Average comments
-        ${totalAverageComments} : 0, ${totalAverageComments}
-  \`\`\``;
-
   text = text
     .addHeading("Issue comment average", 3)
-    .addEOL()
-    .addRaw(averageIssueState)
     .addEOL();
 
   text = text
