@@ -1,3 +1,5 @@
+import { average, median } from "simple-statistics";
+
 import { ActionLogger, IssueNode } from "../github/types";
 import {
   calculateEventsPerMonth,
@@ -13,12 +15,14 @@ export class IssueAnalytics {
   getAnalytics(issues: IssueNode[]): IssuesMetrics {
     const monthlyTotals = this.generateMonthlyTotals(issues);
     const monthlyMetrics = this.generateMonthlyAverages(issues);
+    const totalMetrics = this.generateTotalMetrics(issues);
 
     return {
       open: issues.filter(({ state }) => state === "OPEN").length,
       closed: issues.filter(({ state }) => state === "CLOSED").length,
       monthlyTotals,
       monthlyMetrics,
+      totalMetrics,
     };
   }
 
@@ -93,6 +97,41 @@ export class IssueAnalytics {
       timeToFirstComment: averageTimeToFirstComment,
       closeTime: averageTimeToClose,
       comments: averageCommentsPerMonth,
+    };
+  }
+
+  generateTotalMetrics(issues: IssueNode[]): IssuesMetrics["totalMetrics"] {
+    this.logger.debug("Calculating the metrics on the totality of time");
+
+    const totalComments = issues.map(({ comments }) => comments.totalCount);
+    const totalCloseTime = issues
+      .map((issue) =>
+        issue.closedAt
+          ? calculateDaysBetweenDates(issue.createdAt, issue.closedAt)
+          : -1,
+      )
+      .filter((v) => v > -1);
+    const totalTimeToFirstComment = issues
+      .filter(({ comments }) => comments.nodes.length > 0)
+      .map((issue) =>
+        calculateDaysBetweenDates(
+          issue.createdAt,
+          issue.comments.nodes[0].createdAt,
+        ),
+      );
+    return {
+      comments: {
+        median: Math.round(median(totalComments)),
+        average: Math.round(average(totalComments)),
+      },
+      closeTime: {
+        median: Math.round(median(totalCloseTime)),
+        average: Math.round(average(totalCloseTime)),
+      },
+      timeToFirstComment: {
+        median: Math.round(median(totalTimeToFirstComment)),
+        average: Math.round(average(totalTimeToFirstComment)),
+      },
     };
   }
 }

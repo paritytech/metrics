@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 import { summary } from "@actions/core";
-import { average } from "simple-statistics";
 
 import {
   IssuesMetrics,
@@ -178,50 +177,20 @@ const generateIssueSummary = (
 
   text = summary.addHeading("Issues", 1).addEOL().addRaw(prChart).addEOL();
 
-  const totalMedianTimeToClose = Math.round(
-    average(issueMetrics.monthlyMetrics.closeTime.map(({ median }) => median)),
-  );
-  const totalMedianTimeToFirstComment = Math.round(
-    average(
-      issueMetrics.monthlyMetrics.timeToFirstComment.map(
-        ({ median }) => median,
-      ),
-    ),
-  );
-  const totalMedianComments = Math.round(
-    average(issueMetrics.monthlyMetrics.comments.map(({ median }) => median)),
-  );
-
-  const totalAverageTimeToClose = Math.round(
-    average(
-      issueMetrics.monthlyMetrics.closeTime.map(({ average }) => average),
-    ),
-  );
-  const totalAverageTimeToFirstComment = Math.round(
-    average(
-      issueMetrics.monthlyMetrics.timeToFirstComment.map(
-        ({ average }) => average,
-      ),
-    ),
-  );
-  const totalAverageComments = Math.round(
-    average(issueMetrics.monthlyMetrics.comments.map(({ average }) => average)),
-  );
-
   const medianIssueState = `\`\`\`mermaid
     gantt
         title Average activity time (days)
         dateFormat  X
         axisFormat %s
         section Time to close
-        Median ${totalMedianTimeToClose} : 0, ${totalMedianTimeToClose}
-        Average ${totalAverageTimeToClose} : 0, ${totalAverageTimeToClose}
+        Median ${issueMetrics.totalMetrics.closeTime.median} : 0, ${issueMetrics.totalMetrics.closeTime.median}
+        Average ${issueMetrics.totalMetrics.closeTime.average} : 0, ${issueMetrics.totalMetrics.closeTime.average}
         section Time to first comment
-        Median ${totalMedianTimeToFirstComment} : 0, ${totalMedianTimeToFirstComment}
-        Average ${totalAverageTimeToFirstComment} : 0, ${totalAverageTimeToFirstComment}
-        section Average comments
-        Median ${totalMedianComments} : 0, ${totalMedianComments}
-        Average ${totalAverageComments} : 0, ${totalAverageComments}
+        Median ${issueMetrics.totalMetrics.timeToFirstComment.median} : 0, ${issueMetrics.totalMetrics.timeToFirstComment.median}
+        Average ${issueMetrics.totalMetrics.timeToFirstComment.average} : 0, ${issueMetrics.totalMetrics.timeToFirstComment.average}
+        section Average comments per issue
+        Median ${issueMetrics.totalMetrics.comments.median} : 0, ${issueMetrics.totalMetrics.comments.median}
+        Average ${issueMetrics.totalMetrics.comments.average} : 0, ${issueMetrics.totalMetrics.comments.average}
   \`\`\``;
 
   text = text

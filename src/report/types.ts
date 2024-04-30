@@ -53,6 +53,11 @@ export interface IssuesMetrics {
     /** Time to first comment per month */
     timeToFirstComment: MonthMetrics[];
   };
+  totalMetrics: {
+    comments: TotalMetrics;
+    closeTime: TotalMetrics;
+    timeToFirstComment: TotalMetrics;
+  };
 }
 
 export type MonthWithMatch = [string, number];
