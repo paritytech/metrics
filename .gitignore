@@ -20,3 +20,5 @@ index.html
 # Generated files
 src/github/queries/*.ts
 src/render/template.ts
+
+.cache
