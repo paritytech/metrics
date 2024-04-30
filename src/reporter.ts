@@ -39,46 +39,20 @@ const generatePrSummary = (
     .addRaw(prChart)
     .addEOL();
 
-  const totalMedianTimeToClose = Math.round(
-    average(prMetrics.monthlyMetrics.mergeTime.map(({ median }) => median)) /
-      24,
-  );
-  const totalMedianTimeToFirstReview = Math.round(
-    average(
-      prMetrics.monthlyMetrics.timeToFirstReview.map(({ median }) => median),
-    ) / 24,
-  );
-  const totalMedianReviews = Math.round(
-    average(prMetrics.monthlyMetrics.reviews.map(({ median }) => median)),
-  );
-
-  const totalAverageTimeToClose = Math.round(
-    average(prMetrics.monthlyMetrics.mergeTime.map(({ average }) => average)) /
-      24,
-  );
-  const totalAverageTimeToFirstReview = Math.round(
-    average(
-      prMetrics.monthlyMetrics.timeToFirstReview.map(({ average }) => average),
-    ) / 24,
-  );
-  const totalAverageReviews = Math.round(
-    average(prMetrics.monthlyMetrics.reviews.map(({ average }) => average)),
-  );
-
   const medianReviews = `\`\`\`mermaid
     gantt
         title Average PR time (days)
         dateFormat  X
         axisFormat %s
         section To close
-        Average ${totalAverageTimeToClose} : 0, ${totalAverageTimeToClose}
-        Median ${totalMedianTimeToClose} : 0, ${totalMedianTimeToClose}
+        Average ${prMetrics.totalMetrics.mergeTime.average} : 0, ${prMetrics.totalMetrics.mergeTime.average}
+        Median ${prMetrics.totalMetrics.mergeTime.median} : 0, ${prMetrics.totalMetrics.mergeTime.median}
         section To first review
-        Average ${totalAverageTimeToFirstReview} : 0, ${totalAverageTimeToFirstReview}
-        Median ${totalMedianTimeToFirstReview} : 0, ${totalMedianTimeToFirstReview}
+        Average ${prMetrics.totalMetrics.timeToFirstReview.average} : 0, ${prMetrics.totalMetrics.timeToFirstReview.average}
+        Median ${prMetrics.totalMetrics.timeToFirstReview.median} : 0, ${prMetrics.totalMetrics.timeToFirstReview.median}
         section Reviews per PR
-        Average ${totalAverageReviews} : 0, ${totalAverageReviews}
-        Median ${totalMedianReviews} : 0, ${totalMedianReviews}
+        Average ${prMetrics.totalMetrics.reviews.average} : 0, ${prMetrics.totalMetrics.reviews.average}
+        Median ${prMetrics.totalMetrics.reviews.median} : 0, ${prMetrics.totalMetrics.reviews.median}
   \`\`\``;
 
   text = text

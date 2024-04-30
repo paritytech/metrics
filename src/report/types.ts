@@ -23,6 +23,11 @@ export interface PullRequestMetrics {
     /** Lines changed per month */
     linesChanged: MonthMetrics[];
   };
+  totalMetrics: {
+    reviews: TotalMetrics;
+    mergeTime: TotalMetrics;
+    timeToFirstReview: TotalMetrics;
+  };
   reviewers: ({ month: string } & Reviewer)[];
   topReviewer?: Reviewer | null;
 }
@@ -52,6 +57,7 @@ export interface IssuesMetrics {
 
 export type MonthWithMatch = [string, number];
 export type MonthMetrics = { month: string; median: number; average: number };
+export type TotalMetrics = { median: number; average: number };
 
 export type DurationWithInitialDate = {
   date: string;

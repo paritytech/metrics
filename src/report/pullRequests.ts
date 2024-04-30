@@ -1,4 +1,5 @@
 import moment from "moment";
+import { average, median } from "simple-statistics";
 
 import { ActionLogger, PullRequestNode } from "../github/types";
 import {
@@ -39,6 +40,7 @@ export class PullRequestAnalytics {
     const prs = this.getPullRequestAverages(prList);
     const monthlyTotals = this.generateMonthlyTotals(prs);
     const monthlyMetrics = this.generateMonthlyMetrics(prs);
+    const totalMetrics = this.generateTotalMetrics(prs);
 
     const reviewList = prList.flatMap((pr) => pr.reviews.nodes);
     const reviewers = this.getTopMonthlyReviewers(reviewList);
@@ -49,6 +51,7 @@ export class PullRequestAnalytics {
       ...prMetric,
       monthlyTotals,
       monthlyMetrics,
+      totalMetrics,
       reviewers,
       topReviewer,
     };
@@ -269,5 +272,35 @@ export class PullRequestAnalytics {
     }
 
     return topReviewer;
+  }
+
+  generateTotalMetrics(
+    prs: PullRequestInfo[],
+  ): PullRequestMetrics["totalMetrics"] {
+    this.logger.debug("Calculating the metrics on the totality of time");
+
+    const mergeTimeTotal = prs
+      .map(({ close }) => close?.daysSinceCreation ?? 0)
+      .filter((d) => d !== 0)
+      .map((v) => v / 24);
+    const timeToFirstTotal = prs
+      .map(({ review }) => review?.daysSinceCreation ?? 0)
+      .filter((d) => d !== 0)
+      .map((v) => v / 24);
+    const reviewsTotal = prs.map((pr) => pr.reviews);
+    return {
+      mergeTime: {
+        median: Math.round(median(mergeTimeTotal)),
+        average: Math.round(average(mergeTimeTotal)),
+      },
+      reviews: {
+        median: Math.round(median(reviewsTotal)),
+        average: Math.round(average(reviewsTotal)),
+      },
+      timeToFirstReview: {
+        median: Math.round(median(timeToFirstTotal)),
+        average: Math.round(average(timeToFirstTotal)),
+      },
+    };
   }
 }
