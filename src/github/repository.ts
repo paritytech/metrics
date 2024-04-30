@@ -63,7 +63,7 @@ export class RepositoryApi {
       prs.push(...nodes);
       hasNextPage = pageInfo.hasNextPage;
       cursor = pageInfo.endCursor;
-      if (currentPage % 5 === 0) {
+      if (hasNextPage && currentPage % 5 === 0) {
         this.logger.debug("Pausing for one minute to not hit secondary limits");
         await new Promise<void>((resolve) =>
           setTimeout(() => resolve(), 60_000),
@@ -101,7 +101,7 @@ export class RepositoryApi {
       hasNextPage = pageInfo.hasNextPage;
       cursor = pageInfo.endCursor;
 
-      if (currentPage % 5 === 0) {
+      if (hasNextPage && currentPage % 5 === 0) {
         this.logger.debug("Pausing for one minute to not hit secondary limits");
         await new Promise<void>((resolve) =>
           setTimeout(() => resolve(), 60_000),
