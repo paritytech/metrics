@@ -5,7 +5,7 @@ export interface PullRequestMetrics {
   closed: number;
   merged: number;
   /** Amount of events per month  */
-  monthlyMetrics: {
+  monthlyTotals: {
     /** New PRs per month */
     creation: MonthWithMatch[];
     /** Total reviews per month */
@@ -13,27 +13,16 @@ export interface PullRequestMetrics {
     /** Closed PR per month */
     closed: MonthWithMatch[];
   };
-  /** Average of events per month */
-  monthlyAverages: {
-    /** Average reviews per month */
-    reviews: MonthWithMatch[];
-    /** Average time to merge */
-    mergeTime: MonthWithMatch[];
-    /** Average time to first review per month */
-    timeToFirstReview: MonthWithMatch[];
-    /** Average lines changed per month */
-    linesChanged: MonthWithMatch[];
-  };
-  monthlyMedians: {
-    /** Median reviews per month */
-    reviews: MonthWithMatch[];
-    /** Median time to merge */
-    mergeTime: MonthWithMatch[];
-    /** Median time to first review per month */
-    timeToFirstReview: MonthWithMatch[];
-    /** Median lines changed per month */
-    linesChanged: MonthWithMatch[];
-  };
+  monthlyMetrics: {
+    /** Reviews per month */
+    reviews: MonthMetrics[];
+    /** Time to merge */
+    mergeTime: MonthMetrics[];
+    /** Time to first review per month */
+    timeToFirstReview: MonthMetrics[];
+    /** Lines changed per month */
+    linesChanged: MonthMetrics[];
+  },
   reviewers: ({ month: string } & Reviewer)[];
   topReviewer?: Reviewer | null;
 }
@@ -70,6 +59,7 @@ export interface IssuesMetrics {
 }
 
 export type MonthWithMatch = [string, number];
+export type MonthMetrics = { month: string, median: number, average: number };
 
 export type DurationWithInitialDate = {
   date: string;

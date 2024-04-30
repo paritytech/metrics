@@ -7,6 +7,7 @@ import {
   calculateEventsPerMonth,
   extractMatchesFromDate,
   extractMediansFromDate,
+  gatherValuesPerMonth,
 } from "../util";
 import { DurationWithInitialDate, PullRequestMetrics, Reviewer } from "./types";
 
@@ -42,29 +43,26 @@ export class PullRequestAnalytics {
     };
 
     const prs = this.getPullRequestAverages(prList);
+    const monthlyTotals = this.generateMonthlyTotals(prs);
     const monthlyMetrics = this.generateMonthlyMetrics(prs);
-    const monthlyAverages = this.generateMonthlyAverages(prs);
 
     const reviewList = prList.flatMap((pr) => pr.reviews.nodes);
     const reviewers = this.getTopMonthlyReviewers(reviewList);
-
-    const monthlyMedians = this.generateMonthlyMedians(prs);
 
     const topReviewer = this.getTopReviewer(reviewList);
 
     return {
       ...prMetric,
+      monthlyTotals,
       monthlyMetrics,
-      monthlyAverages,
-      monthlyMedians,
       reviewers,
       topReviewer,
     };
   }
 
-  generateMonthlyMetrics(
+  generateMonthlyTotals(
     prList: PullRequestInfo[],
-  ): PullRequestMetrics["monthlyMetrics"] {
+  ): PullRequestMetrics["monthlyTotals"] {
     this.logger.debug("Calculating monthly metrics");
     const creation = calculateEventsPerMonth(prList.map((pr) => pr.creation));
     const reviews = extractMatchesFromDate(
@@ -88,25 +86,26 @@ export class PullRequestAnalytics {
     };
   }
 
-  generateMonthlyAverages(
+  generateMonthlyMetrics(
     prs: PullRequestInfo[],
-  ): PullRequestMetrics["monthlyAverages"] {
+  ): PullRequestMetrics["monthlyMetrics"] {
     this.logger.debug("Calculating monthly averages");
-    const averageTimeToFirstReview = calculateAveragePerMonth(
+
+    const averageTimeToFirstReview = gatherValuesPerMonth(
       prs
         .map(({ review }) => review)
         .filter((r) => !!r) as DurationWithInitialDate[],
       (value) => value.daysSinceCreation,
     );
 
-    const averageTimeToClose = calculateAveragePerMonth(
+    const averageTimeToClose = gatherValuesPerMonth(
       prs
         .map(({ close }) => close)
         .filter((c) => !!c) as DurationWithInitialDate[],
       (value) => value.daysSinceCreation,
     );
 
-    const linesChanged = calculateAveragePerMonth(
+    const linesChanged = gatherValuesPerMonth(
       prs.map((pr) => {
         return {
           date: pr.creation,
@@ -116,50 +115,7 @@ export class PullRequestAnalytics {
       (value) => value.daysSinceCreation,
     );
 
-    const averageReviewsPerMonth = calculateAveragePerMonth(
-      prs.map((pr) => {
-        return { date: pr.creation, reviews: pr.reviews };
-      }),
-      (reviews) => reviews.reviews,
-    );
-
-    return {
-      timeToFirstReview: averageTimeToFirstReview,
-      mergeTime: averageTimeToClose,
-      linesChanged,
-      reviews: averageReviewsPerMonth,
-    };
-  }
-
-  generateMonthlyMedians(
-    prs: PullRequestInfo[],
-  ): PullRequestMetrics["monthlyMedians"] {
-    this.logger.debug("Calculating monthly median");
-    const averageTimeToFirstReview = extractMediansFromDate(
-      prs
-        .map(({ review }) => review)
-        .filter((r) => !!r) as DurationWithInitialDate[],
-      (value) => value.daysSinceCreation,
-    );
-
-    const averageTimeToClose = extractMediansFromDate(
-      prs
-        .map(({ close }) => close)
-        .filter((c) => !!c) as DurationWithInitialDate[],
-      (value) => value.daysSinceCreation,
-    );
-
-    const linesChanged = extractMediansFromDate(
-      prs.map((pr) => {
-        return {
-          date: pr.creation,
-          daysSinceCreation: Math.abs(pr.additions - pr.deletions),
-        };
-      }),
-      (value) => value.daysSinceCreation,
-    );
-
-    const averageReviewsPerMonth = extractMediansFromDate(
+    const averageReviewsPerMonth = gatherValuesPerMonth(
       prs.map((pr) => {
         return { date: pr.creation, reviews: pr.reviews };
       }),
@@ -183,9 +139,9 @@ export class PullRequestAnalytics {
       const firstReview =
         pr.reviews.nodes.length > 0 ? pr.reviews.nodes[0].submittedAt : null;
       const timeToFirstReview =
-        firstReview != null ? moment(firstReview).diff(creation, "days") : null;
+        firstReview != null ? moment(firstReview).diff(creation, "hours") : null;
       const timeToClose =
-        pr.mergedAt != null ? moment(pr.mergedAt).diff(creation, "days") : null;
+        pr.mergedAt != null ? moment(pr.mergedAt).diff(creation, "hours") : null;
       averages.push({
         number: pr.number,
         creation: pr.createdAt,
@@ -194,9 +150,9 @@ export class PullRequestAnalytics {
           : undefined,
         review: timeToFirstReview
           ? {
-              date: firstReview as string,
-              daysSinceCreation: timeToFirstReview,
-            }
+            date: firstReview as string,
+            daysSinceCreation: timeToFirstReview,
+          }
           : undefined,
         additions: pr.additions,
         deletions: pr.deletions,

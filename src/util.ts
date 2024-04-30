@@ -1,8 +1,9 @@
 import { debug, error, info, warning } from "@actions/core";
 import moment from "moment";
+import { median, average } from "simple-statistics";
 
 import { ActionLogger } from "./github/types";
-import { MonthWithMatch } from "./report/types";
+import { MonthMetrics, MonthWithMatch } from "./report/types";
 
 export function generateCoreLogger(): ActionLogger {
   return { info, debug, warn: warning, error };
@@ -85,7 +86,7 @@ export const extractMediansFromDate = <T extends { date: string }>(
       // We get the element in the center
       const median =
         currentMonthValues.sort()[
-          Math.round((currentMonthValues.length - 1) / 2)
+        Math.round((currentMonthValues.length - 1) / 2)
         ];
       // We push the previous match and reset it
       monthsWithMatches.push([currentMonth.format("MMM YYYY"), median]);
@@ -127,3 +128,43 @@ export const calculateAveragePerMonth = <T extends { date: string }>(
 /** Calculates the round number average over an array of numbers */
 export const calculateAverage = (values: number[]): number =>
   Math.round(values.reduce((a, t) => a + t, 0) / values.length);
+
+
+export const gatherValuesPerMonth = <T extends { date: string }>(
+  dates: T[],
+  getAmount: (value: T) => number,
+): MonthMetrics[] => {
+  if (dates.length === 0) {
+    return [];
+  }
+  dates.sort((a, b) => (a.date > b.date ? 1 : -1));
+
+  // We get the month of the first date
+  let currentMonth = moment(dates[0].date).startOf("month");
+
+  const monthsWithMatches: MonthMetrics[] = [];
+
+  let currentMonthValues: number[] = [];
+  for (const dateObj of dates) {
+    const amountToAdd = getAmount(dateObj);
+    // If it happened in the same month
+    if (currentMonth.diff(moment(dateObj.date), "month") == 0) {
+      currentMonthValues.push(amountToAdd);
+    } else {
+      // We push the previous match and reset it
+      monthsWithMatches.push({
+        month: currentMonth.format("MMM YYYY"),
+        median: Math.round(median(currentMonthValues)),
+        average: Math.round(average(currentMonthValues)),
+      });
+
+      // We change the currentMonth variable to the following one
+      currentMonth = moment(dateObj.date).startOf("month");
+
+      // We reset the collection of time with the new value
+      currentMonthValues = [amountToAdd];
+    }
+  }
+
+  return monthsWithMatches;
+}
