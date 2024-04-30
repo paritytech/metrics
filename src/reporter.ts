@@ -205,27 +205,27 @@ const generateIssueSummary = (
 
   text = summary.addHeading("Issues", 1).addEOL().addRaw(prChart).addEOL();
 
-  const totalMedianTimeToClose = calculateAverage(
-    issueMetrics.monthlyMedians.closeTime.map(([_, median]) => median),
-  );
-  const totalMedianTimeToFirstComment = calculateAverage(
-    issueMetrics.monthlyMedians.timeToFirstComment.map(([_, median]) => median),
-  );
-  const totalMedianComments = calculateAverage(
-    issueMetrics.monthlyMedians.comments.map(([_, median]) => median),
-  );
+  const totalMedianTimeToClose = Math.round(average(
+    issueMetrics.monthlyMetrics.closeTime.map(({ median }) => median),
+  ));
+  const totalMedianTimeToFirstComment = Math.round(average(
+    issueMetrics.monthlyMetrics.timeToFirstComment.map(({ median }) => median),
+  ));
+  const totalMedianComments = Math.round(average(
+    issueMetrics.monthlyMetrics.comments.map(({ median }) => median),
+  ));
 
-  const totalAverageTimeToClose = calculateAverage(
-    issueMetrics.monthlyAverages.closeTime.map(([_, average]) => average),
-  );
-  const totalAverageTimeToFirstComment = calculateAverage(
-    issueMetrics.monthlyAverages.timeToFirstComment.map(
-      ([_, average]) => average,
+  const totalAverageTimeToClose = Math.round(average(
+    issueMetrics.monthlyMetrics.closeTime.map(({ average }) => average),
+  ));
+  const totalAverageTimeToFirstComment = Math.round(average(
+    issueMetrics.monthlyMetrics.timeToFirstComment.map(
+      ({ average }) => average,
     ),
-  );
-  const totalAverageComments = calculateAverage(
-    issueMetrics.monthlyAverages.comments.map(([_, average]) => average),
-  );
+  ));
+  const totalAverageComments = Math.round(average(
+    issueMetrics.monthlyMetrics.comments.map(({ average }) => average),
+  ));
 
   const medianIssueState = `\`\`\`mermaid
     gantt
@@ -233,69 +233,43 @@ const generateIssueSummary = (
         dateFormat  X
         axisFormat %s
         section Time to close
-        Median : 0, ${totalMedianTimeToClose}
-        Average : 0, ${totalAverageTimeToClose}
+        Median ${totalMedianTimeToClose} : 0, ${totalMedianTimeToClose}
+        Average ${totalAverageTimeToClose} : 0, ${totalAverageTimeToClose}
         section Time to first comment
-        Median : 0, ${totalMedianTimeToFirstComment}
-        Average : 0, ${totalAverageTimeToFirstComment}
+        Median ${totalMedianTimeToFirstComment} : 0, ${totalMedianTimeToFirstComment}
+        Average ${totalAverageTimeToFirstComment} : 0, ${totalAverageTimeToFirstComment}
         section Average comments
-        ${totalMedianComments} : 0, ${totalMedianComments}
+        Median ${totalMedianComments} : 0, ${totalMedianComments}
+        Average ${totalAverageComments} : 0, ${totalAverageComments}
   \`\`\``;
 
   text = text
-    .addHeading("Issue comment median", 3)
+    .addHeading("Issue comment", 3)
     .addEOL()
     .addRaw(medianIssueState)
     .addEOL();
 
   text = text
-    .addHeading("Median duration per month", 3)
+    .addHeading("Duration per month", 3)
     .addEOL()
     .addRaw(
-      monthWithMatchToGanttChart(
-        "Median time to first comment (days)",
-        issueMetrics.monthlyMedians.timeToFirstComment,
+      monthWithMetricsToGanttChart(
+        "Time to first comment (days)",
+        issueMetrics.monthlyMetrics.timeToFirstComment,
       ),
     )
     .addEOL()
     .addRaw(
-      monthWithMatchToGanttChart(
-        "Median time to close (days)",
-        issueMetrics.monthlyMedians.closeTime,
+      monthWithMetricsToGanttChart(
+        "Time to close (days)",
+        issueMetrics.monthlyMetrics.closeTime,
       ),
     )
     .addEOL()
     .addRaw(
-      monthWithMatchToGanttChart(
-        "Median comments per issue per month",
-        issueMetrics.monthlyMedians.comments,
-      ),
-    )
-    .addEOL();
-
-  text = text.addHeading("Issue comment average", 3).addEOL();
-
-  text = text
-    .addHeading("Average duration per month", 3)
-    .addEOL()
-    .addRaw(
-      monthWithMatchToGanttChart(
-        "Average time to first comment (days)",
-        issueMetrics.monthlyAverages.timeToFirstComment,
-      ),
-    )
-    .addEOL()
-    .addRaw(
-      monthWithMatchToGanttChart(
-        "Average time to close (days)",
-        issueMetrics.monthlyAverages.closeTime,
-      ),
-    )
-    .addEOL()
-    .addRaw(
-      monthWithMatchToGanttChart(
-        "Average comments per issue per month",
-        issueMetrics.monthlyAverages.comments,
+      monthWithMetricsToGanttChart(
+        "Comments per issue per month",
+        issueMetrics.monthlyMetrics.comments,
       ),
     )
     .addEOL();
@@ -306,21 +280,21 @@ const generateIssueSummary = (
     .addRaw(
       monthWithMatchToGanttChart(
         "New issues per month",
-        issueMetrics.monthlyMetrics.creation,
+        issueMetrics.monthlyTotals.creation,
       ),
     )
     .addEOL()
     .addRaw(
       monthWithMatchToGanttChart(
         "Closed issues per month",
-        issueMetrics.monthlyMetrics.closed,
+        issueMetrics.monthlyTotals.closed,
       ),
     )
     .addEOL()
     .addRaw(
       monthWithMatchToGanttChart(
         "Comments per month",
-        issueMetrics.monthlyMetrics.comments,
+        issueMetrics.monthlyTotals.comments,
       ),
     )
     .addEOL();

@@ -31,7 +31,7 @@ export interface IssuesMetrics {
   open: number;
   closed: number;
   /** Amount of events per month  */
-  monthlyMetrics: {
+  monthlyTotals: {
     /** New issues per month */
     creation: MonthWithMatch[];
     /** Total comments per month */
@@ -39,27 +39,19 @@ export interface IssuesMetrics {
     /** Closed issues per month */
     closed: MonthWithMatch[];
   };
-  /** Average of events per month */
-  monthlyAverages: {
-    /** Average comments per month */
-    comments: MonthWithMatch[];
-    /** Average time to close */
-    closeTime: MonthWithMatch[];
-    /** Average time to first comment per month */
-    timeToFirstComment: MonthWithMatch[];
-  };
-  monthlyMedians: {
-    /** Median comments per month */
-    comments: MonthWithMatch[];
-    /** Median time to close */
-    closeTime: MonthWithMatch[];
-    /** Median time to first comment per month */
-    timeToFirstComment: MonthWithMatch[];
+  /** Events per month */
+  monthlyMetrics: {
+    /** Comments per month */
+    comments: MonthMetrics[];
+    /** Time to close */
+    closeTime: MonthMetrics[];
+    /** Time to first comment per month */
+    timeToFirstComment: MonthMetrics[];
   };
 }
 
 export type MonthWithMatch = [string, number];
-export type MonthMetrics = { month: string, median: number, average: number };
+export type MonthMetrics = { month: string; median: number; average: number };
 
 export type DurationWithInitialDate = {
   date: string;
