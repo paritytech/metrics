@@ -7,7 +7,6 @@ import {
   MonthMetrics,
   PullRequestMetrics,
 } from "./report/types";
-import { calculateAverage } from "./util";
 
 export const generateSummary = (
   repo: { owner: string; repo: string },
@@ -42,7 +41,7 @@ const generatePrSummary = (
 
   const totalMedianTimeToClose = Math.round(
     average(prMetrics.monthlyMetrics.mergeTime.map(({ median }) => median)) /
-    24,
+      24,
   );
   const totalMedianTimeToFirstReview = Math.round(
     average(
@@ -55,7 +54,7 @@ const generatePrSummary = (
 
   const totalAverageTimeToClose = Math.round(
     average(prMetrics.monthlyMetrics.mergeTime.map(({ average }) => average)) /
-    24,
+      24,
   );
   const totalAverageTimeToFirstReview = Math.round(
     average(
@@ -205,27 +204,35 @@ const generateIssueSummary = (
 
   text = summary.addHeading("Issues", 1).addEOL().addRaw(prChart).addEOL();
 
-  const totalMedianTimeToClose = Math.round(average(
-    issueMetrics.monthlyMetrics.closeTime.map(({ median }) => median),
-  ));
-  const totalMedianTimeToFirstComment = Math.round(average(
-    issueMetrics.monthlyMetrics.timeToFirstComment.map(({ median }) => median),
-  ));
-  const totalMedianComments = Math.round(average(
-    issueMetrics.monthlyMetrics.comments.map(({ median }) => median),
-  ));
-
-  const totalAverageTimeToClose = Math.round(average(
-    issueMetrics.monthlyMetrics.closeTime.map(({ average }) => average),
-  ));
-  const totalAverageTimeToFirstComment = Math.round(average(
-    issueMetrics.monthlyMetrics.timeToFirstComment.map(
-      ({ average }) => average,
+  const totalMedianTimeToClose = Math.round(
+    average(issueMetrics.monthlyMetrics.closeTime.map(({ median }) => median)),
+  );
+  const totalMedianTimeToFirstComment = Math.round(
+    average(
+      issueMetrics.monthlyMetrics.timeToFirstComment.map(
+        ({ median }) => median,
+      ),
     ),
-  ));
-  const totalAverageComments = Math.round(average(
-    issueMetrics.monthlyMetrics.comments.map(({ average }) => average),
-  ));
+  );
+  const totalMedianComments = Math.round(
+    average(issueMetrics.monthlyMetrics.comments.map(({ median }) => median)),
+  );
+
+  const totalAverageTimeToClose = Math.round(
+    average(
+      issueMetrics.monthlyMetrics.closeTime.map(({ average }) => average),
+    ),
+  );
+  const totalAverageTimeToFirstComment = Math.round(
+    average(
+      issueMetrics.monthlyMetrics.timeToFirstComment.map(
+        ({ average }) => average,
+      ),
+    ),
+  );
+  const totalAverageComments = Math.round(
+    average(issueMetrics.monthlyMetrics.comments.map(({ average }) => average)),
+  );
 
   const medianIssueState = `\`\`\`mermaid
     gantt

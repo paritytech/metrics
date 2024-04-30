@@ -22,7 +22,7 @@ export interface PullRequestMetrics {
     timeToFirstReview: MonthMetrics[];
     /** Lines changed per month */
     linesChanged: MonthMetrics[];
-  },
+  };
   reviewers: ({ month: string } & Reviewer)[];
   topReviewer?: Reviewer | null;
 }

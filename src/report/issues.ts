@@ -1,10 +1,8 @@
 import { RepositoryApi } from "../github/repository";
 import { ActionLogger, IssueNode } from "../github/types";
 import {
-  calculateAveragePerMonth,
   calculateEventsPerMonth,
   extractMatchesFromDate,
-  extractMediansFromDate,
   gatherValuesPerMonth,
 } from "../util";
 import { IssuesMetrics } from "./types";
@@ -14,7 +12,7 @@ export class IssueAnalytics {
   constructor(
     private readonly api: RepositoryApi,
     private readonly logger: ActionLogger,
-  ) { }
+  ) {}
 
   async getAnalytics(): Promise<IssuesMetrics> {
     const issues = await this.api.getIssues();
@@ -41,7 +39,6 @@ export class IssueAnalytics {
           return { date: i.createdAt, comments: i.comments.totalCount };
         }),
       (value) => value.comments,
-      false,
     );
 
     const closeDates = issues

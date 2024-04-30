@@ -3,10 +3,8 @@ import moment from "moment";
 import { RepositoryApi } from "../github/repository";
 import { ActionLogger, PullRequestNode } from "../github/types";
 import {
-  calculateAveragePerMonth,
   calculateEventsPerMonth,
   extractMatchesFromDate,
-  extractMediansFromDate,
   gatherValuesPerMonth,
 } from "../util";
 import { DurationWithInitialDate, PullRequestMetrics, Reviewer } from "./types";
@@ -70,7 +68,6 @@ export class PullRequestAnalytics {
         .filter((pr) => !!pr.review)
         .map((pr) => pr.review as DurationWithInitialDate),
       (value) => value.daysSinceCreation,
-      false,
     );
 
     const closeDates = prList
@@ -139,9 +136,13 @@ export class PullRequestAnalytics {
       const firstReview =
         pr.reviews.nodes.length > 0 ? pr.reviews.nodes[0].submittedAt : null;
       const timeToFirstReview =
-        firstReview != null ? moment(firstReview).diff(creation, "hours") : null;
+        firstReview != null
+          ? moment(firstReview).diff(creation, "hours")
+          : null;
       const timeToClose =
-        pr.mergedAt != null ? moment(pr.mergedAt).diff(creation, "hours") : null;
+        pr.mergedAt != null
+          ? moment(pr.mergedAt).diff(creation, "hours")
+          : null;
       averages.push({
         number: pr.number,
         creation: pr.createdAt,
@@ -150,9 +151,9 @@ export class PullRequestAnalytics {
           : undefined,
         review: timeToFirstReview
           ? {
-            date: firstReview as string,
-            daysSinceCreation: timeToFirstReview,
-          }
+              date: firstReview as string,
+              daysSinceCreation: timeToFirstReview,
+            }
           : undefined,
         additions: pr.additions,
         deletions: pr.deletions,
