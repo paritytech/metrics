@@ -1,6 +1,5 @@
 import moment from "moment";
 
-import { RepositoryApi } from "../github/repository";
 import { ActionLogger, PullRequestNode } from "../github/types";
 import {
   calculateEventsPerMonth,
@@ -24,16 +23,13 @@ interface PullRequestInfo {
 
 export class PullRequestAnalytics {
   constructor(
-    private readonly api: RepositoryApi,
     private readonly logger: ActionLogger,
     repo: { owner: string; repo: string },
   ) {
     logger.debug(`Reporter has been configured for ${repo.owner}/${repo.repo}`);
   }
 
-  async fetchMetricsForPullRequests(): Promise<PullRequestMetrics> {
-    const prList = await this.api.getPullRequests();
-
+  fetchMetricsForPullRequests(prList: PullRequestNode[]): PullRequestMetrics {
     const prMetric = {
       open: prList.filter(({ state }) => state === "OPEN").length,
       closed: prList.filter(({ state }) => state === "CLOSED").length,
@@ -172,14 +168,16 @@ export class PullRequestAnalytics {
       return [];
     }
     reviews.sort((a, b) =>
-      moment(a.submittedAt as string).diff(moment(b.submittedAt as string)),
+      moment(a.submittedAt as string).diff(
+        moment(b.submittedAt as string),
+        "days",
+      ),
     );
 
     // We get the month of the first date
     let currentMonth = moment(reviews[0].submittedAt).startOf("month");
 
     const monthsWithMatches: PullRequestMetrics["reviewers"] = [];
-    // let reviewsPerUser: Map<string, number> = new Map<string, number>();
     let reviewsPerUser: { user: string; reviews: number; avatar: string }[] =
       [];
 

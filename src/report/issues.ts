@@ -1,4 +1,3 @@
-import { RepositoryApi } from "../github/repository";
 import { ActionLogger, IssueNode } from "../github/types";
 import {
   calculateEventsPerMonth,
@@ -9,13 +8,9 @@ import { IssuesMetrics } from "./types";
 import { calculateDaysBetweenDates } from "./utils";
 
 export class IssueAnalytics {
-  constructor(
-    private readonly api: RepositoryApi,
-    private readonly logger: ActionLogger,
-  ) {}
+  constructor(private readonly logger: ActionLogger) {}
 
-  async getAnalytics(): Promise<IssuesMetrics> {
-    const issues = await this.api.getIssues();
+  getAnalytics(issues: IssueNode[]): IssuesMetrics {
     const monthlyTotals = this.generateMonthlyTotals(issues);
     const monthlyMetrics = this.generateMonthlyAverages(issues);
 
