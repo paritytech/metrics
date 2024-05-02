@@ -7,10 +7,10 @@ import {
   gatherValuesPerMonth,
 } from "../util";
 import { IssuesMetrics } from "./types";
-import { calculateDaysBetweenDates } from "./utils";
+import { calculateDaysBetweenDates, toTotalMetrics } from "./utils";
 
 export class IssueAnalytics {
-  constructor(private readonly logger: ActionLogger) {}
+  constructor(private readonly logger: ActionLogger) { }
 
   getAnalytics(issues: IssueNode[]): IssuesMetrics {
     const monthlyTotals = this.generateMonthlyTotals(issues);
@@ -120,18 +120,9 @@ export class IssueAnalytics {
         ),
       );
     return {
-      comments: {
-        median: Math.round(median(totalComments)),
-        average: Math.round(average(totalComments)),
-      },
-      closeTime: {
-        median: Math.round(median(totalCloseTime)),
-        average: Math.round(average(totalCloseTime)),
-      },
-      timeToFirstComment: {
-        median: Math.round(median(totalTimeToFirstComment)),
-        average: Math.round(average(totalTimeToFirstComment)),
-      },
+      comments: toTotalMetrics(totalComments),
+      closeTime: toTotalMetrics(totalCloseTime),
+      timeToFirstComment: toTotalMetrics(totalTimeToFirstComment),
     };
   }
 }

@@ -8,6 +8,7 @@ import {
   gatherValuesPerMonth,
 } from "../util";
 import { DurationWithInitialDate, PullRequestMetrics, Reviewer } from "./types";
+import { toTotalMetrics } from "./utils";
 
 interface PullRequestInfo {
   number: number;
@@ -150,9 +151,9 @@ export class PullRequestAnalytics {
           : undefined,
         review: timeToFirstReview
           ? {
-              date: firstReview as string,
-              daysSinceCreation: timeToFirstReview,
-            }
+            date: firstReview as string,
+            daysSinceCreation: timeToFirstReview,
+          }
           : undefined,
         additions: pr.additions,
         deletions: pr.deletions,
@@ -289,18 +290,9 @@ export class PullRequestAnalytics {
       .map((v) => v / 24);
     const reviewsTotal = prs.map((pr) => pr.reviews);
     return {
-      mergeTime: {
-        median: Math.round(median(mergeTimeTotal)),
-        average: Math.round(average(mergeTimeTotal)),
-      },
-      reviews: {
-        median: Math.round(median(reviewsTotal)),
-        average: Math.round(average(reviewsTotal)),
-      },
-      timeToFirstReview: {
-        median: Math.round(median(timeToFirstTotal)),
-        average: Math.round(average(timeToFirstTotal)),
-      },
+      mergeTime: toTotalMetrics(mergeTimeTotal),
+      reviews: toTotalMetrics(reviewsTotal),
+      timeToFirstReview: toTotalMetrics(timeToFirstTotal),
     };
   }
 }

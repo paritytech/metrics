@@ -278,7 +278,8 @@ gantt
   ${months
     .map(
       ({ month, median, average }) =>
-        `section ${month}\n    Average ${average} : 0, ${average}\n    Median ${median} : 0, ${median}`,
+        (median + average > -1) ?
+          `section ${month}\n    Average ${average} : 0, ${average}\n    Median ${median} : 0, ${median}` : "",
     )
     .join("\n    ")}
 \`\`\``;
