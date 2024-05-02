@@ -1,11 +1,11 @@
 import moment from "moment";
+import { average, median } from "simple-statistics";
 
-import { RepositoryApi } from "../github/repository";
 import { ActionLogger, PullRequestNode } from "../github/types";
 import {
-  calculateAveragePerMonth,
   calculateEventsPerMonth,
   extractMatchesFromDate,
+  gatherValuesPerMonth,
 } from "../util";
 import { DurationWithInitialDate, PullRequestMetrics, Reviewer } from "./types";
 
@@ -24,16 +24,13 @@ interface PullRequestInfo {
 
 export class PullRequestAnalytics {
   constructor(
-    private readonly api: RepositoryApi,
     private readonly logger: ActionLogger,
     repo: { owner: string; repo: string },
   ) {
     logger.debug(`Reporter has been configured for ${repo.owner}/${repo.repo}`);
   }
 
-  async fetchMetricsForPullRequests(): Promise<PullRequestMetrics> {
-    const prList = await this.api.getPullRequests();
-
+  fetchMetricsForPullRequests(prList: PullRequestNode[]): PullRequestMetrics {
     const prMetric = {
       open: prList.filter(({ state }) => state === "OPEN").length,
       closed: prList.filter(({ state }) => state === "CLOSED").length,
@@ -41,8 +38,9 @@ export class PullRequestAnalytics {
     };
 
     const prs = this.getPullRequestAverages(prList);
+    const monthlyTotals = this.generateMonthlyTotals(prs);
     const monthlyMetrics = this.generateMonthlyMetrics(prs);
-    const monthlyAverages = this.generateMonthlyAverages(prs);
+    const totalMetrics = this.generateTotalMetrics(prs);
 
     const reviewList = prList.flatMap((pr) => pr.reviews.nodes);
     const reviewers = this.getTopMonthlyReviewers(reviewList);
@@ -51,16 +49,17 @@ export class PullRequestAnalytics {
 
     return {
       ...prMetric,
+      monthlyTotals,
       monthlyMetrics,
-      monthlyAverages,
+      totalMetrics,
       reviewers,
       topReviewer,
     };
   }
 
-  generateMonthlyMetrics(
+  generateMonthlyTotals(
     prList: PullRequestInfo[],
-  ): PullRequestMetrics["monthlyMetrics"] {
+  ): PullRequestMetrics["monthlyTotals"] {
     this.logger.debug("Calculating monthly metrics");
     const creation = calculateEventsPerMonth(prList.map((pr) => pr.creation));
     const reviews = extractMatchesFromDate(
@@ -68,7 +67,6 @@ export class PullRequestAnalytics {
         .filter((pr) => !!pr.review)
         .map((pr) => pr.review as DurationWithInitialDate),
       (value) => value.daysSinceCreation,
-      false,
     );
 
     const closeDates = prList
@@ -84,25 +82,26 @@ export class PullRequestAnalytics {
     };
   }
 
-  generateMonthlyAverages(
+  generateMonthlyMetrics(
     prs: PullRequestInfo[],
-  ): PullRequestMetrics["monthlyAverages"] {
+  ): PullRequestMetrics["monthlyMetrics"] {
     this.logger.debug("Calculating monthly averages");
-    const averageTimeToFirstReview = calculateAveragePerMonth(
+
+    const averageTimeToFirstReview = gatherValuesPerMonth(
       prs
         .map(({ review }) => review)
         .filter((r) => !!r) as DurationWithInitialDate[],
       (value) => value.daysSinceCreation,
     );
 
-    const averageTimeToClose = calculateAveragePerMonth(
+    const averageTimeToClose = gatherValuesPerMonth(
       prs
         .map(({ close }) => close)
         .filter((c) => !!c) as DurationWithInitialDate[],
       (value) => value.daysSinceCreation,
     );
 
-    const linesChanged = calculateAveragePerMonth(
+    const linesChanged = gatherValuesPerMonth(
       prs.map((pr) => {
         return {
           date: pr.creation,
@@ -112,7 +111,7 @@ export class PullRequestAnalytics {
       (value) => value.daysSinceCreation,
     );
 
-    const averageReviewsPerMonth = calculateAveragePerMonth(
+    const averageReviewsPerMonth = gatherValuesPerMonth(
       prs.map((pr) => {
         return { date: pr.creation, reviews: pr.reviews };
       }),
@@ -136,9 +135,13 @@ export class PullRequestAnalytics {
       const firstReview =
         pr.reviews.nodes.length > 0 ? pr.reviews.nodes[0].submittedAt : null;
       const timeToFirstReview =
-        firstReview != null ? moment(firstReview).diff(creation, "days") : null;
+        firstReview != null
+          ? moment(firstReview).diff(creation, "hours")
+          : null;
       const timeToClose =
-        pr.mergedAt != null ? moment(pr.mergedAt).diff(creation, "days") : null;
+        pr.mergedAt != null
+          ? moment(pr.mergedAt).diff(creation, "hours")
+          : null;
       averages.push({
         number: pr.number,
         creation: pr.createdAt,
@@ -168,14 +171,16 @@ export class PullRequestAnalytics {
       return [];
     }
     reviews.sort((a, b) =>
-      moment(a.submittedAt as string).diff(moment(b.submittedAt as string)),
+      moment(a.submittedAt as string).diff(
+        moment(b.submittedAt as string),
+        "days",
+      ),
     );
 
     // We get the month of the first date
     let currentMonth = moment(reviews[0].submittedAt).startOf("month");
 
     const monthsWithMatches: PullRequestMetrics["reviewers"] = [];
-    // let reviewsPerUser: Map<string, number> = new Map<string, number>();
     let reviewsPerUser: { user: string; reviews: number; avatar: string }[] =
       [];
 
@@ -267,5 +272,35 @@ export class PullRequestAnalytics {
     }
 
     return topReviewer;
+  }
+
+  generateTotalMetrics(
+    prs: PullRequestInfo[],
+  ): PullRequestMetrics["totalMetrics"] {
+    this.logger.debug("Calculating the metrics on the totality of time");
+
+    const mergeTimeTotal = prs
+      .map(({ close }) => close?.daysSinceCreation ?? 0)
+      .filter((d) => d !== 0)
+      .map((v) => v / 24);
+    const timeToFirstTotal = prs
+      .map(({ review }) => review?.daysSinceCreation ?? 0)
+      .filter((d) => d !== 0)
+      .map((v) => v / 24);
+    const reviewsTotal = prs.map((pr) => pr.reviews);
+    return {
+      mergeTime: {
+        median: Math.round(median(mergeTimeTotal)),
+        average: Math.round(average(mergeTimeTotal)),
+      },
+      reviews: {
+        median: Math.round(median(reviewsTotal)),
+        average: Math.round(average(reviewsTotal)),
+      },
+      timeToFirstReview: {
+        median: Math.round(median(timeToFirstTotal)),
+        average: Math.round(average(timeToFirstTotal)),
+      },
+    };
   }
 }

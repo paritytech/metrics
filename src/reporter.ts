@@ -1,7 +1,11 @@
+/* eslint-disable @typescript-eslint/no-shadow */
 import { summary } from "@actions/core";
 
-import { IssuesMetrics, PullRequestMetrics } from "./report/types";
-import { calculateAverage } from "./util";
+import {
+  IssuesMetrics,
+  MonthMetrics,
+  PullRequestMetrics,
+} from "./report/types";
 
 export const generateSummary = (
   repo: { owner: string; repo: string },
@@ -34,56 +38,49 @@ const generatePrSummary = (
     .addRaw(prChart)
     .addEOL();
 
-  const totalAverageTimeToClose = calculateAverage(
-    prMetrics.monthlyAverages.mergeTime.map(([_, average]) => average),
-  );
-  const totalAverageTimeToFirstReview = calculateAverage(
-    prMetrics.monthlyAverages.timeToFirstReview.map(([_, average]) => average),
-  );
-  const totalAverageReviews = calculateAverage(
-    prMetrics.monthlyAverages.reviews.map(([_, average]) => average),
-  );
-
-  const averageReviews = `\`\`\`mermaid
+  const medianReviews = `\`\`\`mermaid
     gantt
         title Average PR time (days)
         dateFormat  X
         axisFormat %s
         section To close
-        ${totalAverageTimeToClose} : 0, ${totalAverageTimeToClose}
+        Average ${prMetrics.totalMetrics.mergeTime.average} : 0, ${prMetrics.totalMetrics.mergeTime.average}
+        Median ${prMetrics.totalMetrics.mergeTime.median} : 0, ${prMetrics.totalMetrics.mergeTime.median}
         section To first review
-        ${totalAverageTimeToFirstReview} : 0, ${totalAverageTimeToFirstReview}
+        Average ${prMetrics.totalMetrics.timeToFirstReview.average} : 0, ${prMetrics.totalMetrics.timeToFirstReview.average}
+        Median ${prMetrics.totalMetrics.timeToFirstReview.median} : 0, ${prMetrics.totalMetrics.timeToFirstReview.median}
         section Reviews per PR
-        ${totalAverageReviews} : 0, ${totalAverageReviews}
+        Average ${prMetrics.totalMetrics.reviews.average} : 0, ${prMetrics.totalMetrics.reviews.average}
+        Median ${prMetrics.totalMetrics.reviews.median} : 0, ${prMetrics.totalMetrics.reviews.median}
   \`\`\``;
 
   text = text
-    .addHeading("PR review average", 3)
+    .addHeading("PR review", 3)
     .addEOL()
-    .addRaw(averageReviews)
+    .addRaw(medianReviews)
     .addEOL();
 
   text = text
-    .addHeading("Average duration per month", 3)
+    .addHeading("Duration per month", 3)
     .addEOL()
     .addRaw(
-      monthWithMatchToGanttChart(
-        "Average time to first review (days)",
-        prMetrics.monthlyAverages.timeToFirstReview,
+      monthWithMetricsToGanttChart(
+        "Time to first review (hours)",
+        prMetrics.monthlyMetrics.timeToFirstReview,
       ),
     )
     .addEOL()
     .addRaw(
-      monthWithMatchToGanttChart(
-        "Average time to merge (days)",
-        prMetrics.monthlyAverages.mergeTime,
+      monthWithMetricsToGanttChart(
+        "Time to merge (hours)",
+        prMetrics.monthlyMetrics.mergeTime,
       ),
     )
     .addEOL()
     .addRaw(
-      monthWithMatchToGanttChart(
-        "Average reviews per PR per month",
-        prMetrics.monthlyAverages.reviews,
+      monthWithMetricsToGanttChart(
+        "Reviews per PR per month",
+        prMetrics.monthlyMetrics.reviews,
       ),
     )
     .addEOL();
@@ -94,28 +91,28 @@ const generatePrSummary = (
     .addRaw(
       monthWithMatchToGanttChart(
         "New PRs per month",
-        prMetrics.monthlyMetrics.creation,
+        prMetrics.monthlyTotals.creation,
       ),
     )
     .addEOL()
     .addRaw(
       monthWithMatchToGanttChart(
         "Merged PRs per month",
-        prMetrics.monthlyMetrics.closed,
+        prMetrics.monthlyTotals.closed,
       ),
     )
     .addEOL()
     .addRaw(
-      monthWithMatchToGanttChart(
+      monthWithMetricsToGanttChart(
         "Lines changed per month",
-        prMetrics.monthlyAverages.linesChanged,
+        prMetrics.monthlyMetrics.linesChanged,
       ),
     )
     .addEOL()
     .addRaw(
       monthWithMatchToGanttChart(
         "Reviews per month",
-        prMetrics.monthlyMetrics.reviews,
+        prMetrics.monthlyTotals.reviews,
       ),
     )
     .addEOL();
@@ -148,6 +145,7 @@ const generatePrSummary = (
         reviewerOfTheMonth.avatar ?? "",
         `${reviewerOfTheMonth.user}'s avatar`,
       )
+      .addEOL()
       .addRaw(
         `@${reviewerOfTheMonth.user} with ${reviewerOfTheMonth.reviews} reviews!`,
       )
@@ -179,58 +177,49 @@ const generateIssueSummary = (
 
   text = summary.addHeading("Issues", 1).addEOL().addRaw(prChart).addEOL();
 
-  const totalAverageTimeToClose = calculateAverage(
-    issueMetrics.monthlyAverages.closeTime.map(([_, average]) => average),
-  );
-  const totalAverageTimeToFirstComment = calculateAverage(
-    issueMetrics.monthlyAverages.timeToFirstComment.map(
-      ([_, average]) => average,
-    ),
-  );
-  const totalAverageComments = calculateAverage(
-    issueMetrics.monthlyAverages.comments.map(([_, average]) => average),
-  );
-
-  const averageIssueState = `\`\`\`mermaid
+  const medianIssueState = `\`\`\`mermaid
     gantt
         title Average activity time (days)
         dateFormat  X
         axisFormat %s
         section Time to close
-        ${totalAverageTimeToClose} : 0, ${totalAverageTimeToClose}
+        Median ${issueMetrics.totalMetrics.closeTime.median} : 0, ${issueMetrics.totalMetrics.closeTime.median}
+        Average ${issueMetrics.totalMetrics.closeTime.average} : 0, ${issueMetrics.totalMetrics.closeTime.average}
         section Time to first comment
-        ${totalAverageTimeToFirstComment} : 0, ${totalAverageTimeToFirstComment}
-        section Average comments
-        ${totalAverageComments} : 0, ${totalAverageComments}
+        Median ${issueMetrics.totalMetrics.timeToFirstComment.median} : 0, ${issueMetrics.totalMetrics.timeToFirstComment.median}
+        Average ${issueMetrics.totalMetrics.timeToFirstComment.average} : 0, ${issueMetrics.totalMetrics.timeToFirstComment.average}
+        section Average comments per issue
+        Median ${issueMetrics.totalMetrics.comments.median} : 0, ${issueMetrics.totalMetrics.comments.median}
+        Average ${issueMetrics.totalMetrics.comments.average} : 0, ${issueMetrics.totalMetrics.comments.average}
   \`\`\``;
 
   text = text
-    .addHeading("Issue comment average", 3)
+    .addHeading("Issue comment", 3)
     .addEOL()
-    .addRaw(averageIssueState)
+    .addRaw(medianIssueState)
     .addEOL();
 
   text = text
-    .addHeading("Average duration per month", 3)
+    .addHeading("Duration per month", 3)
     .addEOL()
     .addRaw(
-      monthWithMatchToGanttChart(
-        "Average time to first comment (days)",
-        issueMetrics.monthlyAverages.timeToFirstComment,
+      monthWithMetricsToGanttChart(
+        "Time to first comment (days)",
+        issueMetrics.monthlyMetrics.timeToFirstComment,
       ),
     )
     .addEOL()
     .addRaw(
-      monthWithMatchToGanttChart(
-        "Average time to close (days)",
-        issueMetrics.monthlyAverages.closeTime,
+      monthWithMetricsToGanttChart(
+        "Time to close (days)",
+        issueMetrics.monthlyMetrics.closeTime,
       ),
     )
     .addEOL()
     .addRaw(
-      monthWithMatchToGanttChart(
-        "Average comments per issue per month",
-        issueMetrics.monthlyAverages.comments,
+      monthWithMetricsToGanttChart(
+        "Comments per issue per month",
+        issueMetrics.monthlyMetrics.comments,
       ),
     )
     .addEOL();
@@ -241,21 +230,21 @@ const generateIssueSummary = (
     .addRaw(
       monthWithMatchToGanttChart(
         "New issues per month",
-        issueMetrics.monthlyMetrics.creation,
+        issueMetrics.monthlyTotals.creation,
       ),
     )
     .addEOL()
     .addRaw(
       monthWithMatchToGanttChart(
         "Closed issues per month",
-        issueMetrics.monthlyMetrics.closed,
+        issueMetrics.monthlyTotals.closed,
       ),
     )
     .addEOL()
     .addRaw(
       monthWithMatchToGanttChart(
         "Comments per month",
-        issueMetrics.monthlyMetrics.comments,
+        issueMetrics.monthlyTotals.comments,
       ),
     )
     .addEOL();
@@ -274,6 +263,22 @@ gantt
   ${months
     .map(
       ([month, matches]) => `section ${month}\n    ${matches} : 0, ${matches}`,
+    )
+    .join("\n    ")}
+\`\`\``;
+
+const monthWithMetricsToGanttChart = (
+  title: string,
+  months: MonthMetrics[],
+): string => `\`\`\`mermaid
+gantt
+  title ${title}
+  dateFormat X
+  axisFormat %s
+  ${months
+    .map(
+      ({ month, median, average }) =>
+        `section ${month}\n    Average ${average} : 0, ${average}\n    Median ${median} : 0, ${median}`,
     )
     .join("\n    ")}
 \`\`\``;

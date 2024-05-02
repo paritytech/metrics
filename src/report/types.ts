@@ -5,7 +5,7 @@ export interface PullRequestMetrics {
   closed: number;
   merged: number;
   /** Amount of events per month  */
-  monthlyMetrics: {
+  monthlyTotals: {
     /** New PRs per month */
     creation: MonthWithMatch[];
     /** Total reviews per month */
@@ -13,16 +13,20 @@ export interface PullRequestMetrics {
     /** Closed PR per month */
     closed: MonthWithMatch[];
   };
-  /** Average of events per month */
-  monthlyAverages: {
-    /** Average reviews per month */
-    reviews: MonthWithMatch[];
-    /** Average time to merge */
-    mergeTime: MonthWithMatch[];
-    /** Average time to first review per month */
-    timeToFirstReview: MonthWithMatch[];
-    /** Average lines changed per month */
-    linesChanged: MonthWithMatch[];
+  monthlyMetrics: {
+    /** Reviews per month */
+    reviews: MonthMetrics[];
+    /** Time to merge */
+    mergeTime: MonthMetrics[];
+    /** Time to first review per month */
+    timeToFirstReview: MonthMetrics[];
+    /** Lines changed per month */
+    linesChanged: MonthMetrics[];
+  };
+  totalMetrics: {
+    reviews: TotalMetrics;
+    mergeTime: TotalMetrics;
+    timeToFirstReview: TotalMetrics;
   };
   reviewers: ({ month: string } & Reviewer)[];
   topReviewer?: Reviewer | null;
@@ -32,7 +36,7 @@ export interface IssuesMetrics {
   open: number;
   closed: number;
   /** Amount of events per month  */
-  monthlyMetrics: {
+  monthlyTotals: {
     /** New issues per month */
     creation: MonthWithMatch[];
     /** Total comments per month */
@@ -40,18 +44,25 @@ export interface IssuesMetrics {
     /** Closed issues per month */
     closed: MonthWithMatch[];
   };
-  /** Average of events per month */
-  monthlyAverages: {
-    /** Average comments per month */
-    comments: MonthWithMatch[];
-    /** Average time to close */
-    closeTime: MonthWithMatch[];
-    /** Average time to first comment per month */
-    timeToFirstComment: MonthWithMatch[];
+  /** Events per month */
+  monthlyMetrics: {
+    /** Comments per month */
+    comments: MonthMetrics[];
+    /** Time to close */
+    closeTime: MonthMetrics[];
+    /** Time to first comment per month */
+    timeToFirstComment: MonthMetrics[];
+  };
+  totalMetrics: {
+    comments: TotalMetrics;
+    closeTime: TotalMetrics;
+    timeToFirstComment: TotalMetrics;
   };
 }
 
 export type MonthWithMatch = [string, number];
+export type MonthMetrics = { month: string; median: number; average: number };
+export type TotalMetrics = { median: number; average: number };
 
 export type DurationWithInitialDate = {
   date: string;

@@ -1,33 +1,32 @@
-import { RepositoryApi } from "../github/repository";
+import { average, median } from "simple-statistics";
+
 import { ActionLogger, IssueNode } from "../github/types";
 import {
-  calculateAveragePerMonth,
   calculateEventsPerMonth,
   extractMatchesFromDate,
+  gatherValuesPerMonth,
 } from "../util";
 import { IssuesMetrics } from "./types";
 import { calculateDaysBetweenDates } from "./utils";
 
 export class IssueAnalytics {
-  constructor(
-    private readonly api: RepositoryApi,
-    private readonly logger: ActionLogger,
-  ) {}
+  constructor(private readonly logger: ActionLogger) {}
 
-  async getAnalytics(): Promise<IssuesMetrics> {
-    const issues = await this.api.getIssues();
-    const monthlyMetrics = this.generateMonthlyMetrics(issues);
-    const monthlyAverages = this.generateMonthlyAverages(issues);
+  getAnalytics(issues: IssueNode[]): IssuesMetrics {
+    const monthlyTotals = this.generateMonthlyTotals(issues);
+    const monthlyMetrics = this.generateMonthlyAverages(issues);
+    const totalMetrics = this.generateTotalMetrics(issues);
 
     return {
       open: issues.filter(({ state }) => state === "OPEN").length,
       closed: issues.filter(({ state }) => state === "CLOSED").length,
+      monthlyTotals,
       monthlyMetrics,
-      monthlyAverages,
+      totalMetrics,
     };
   }
 
-  generateMonthlyMetrics(issues: IssueNode[]): IssuesMetrics["monthlyMetrics"] {
+  generateMonthlyTotals(issues: IssueNode[]): IssuesMetrics["monthlyTotals"] {
     this.logger.debug("Calculating monthly metrics");
     const creation = calculateEventsPerMonth(
       issues.map((issue) => issue.createdAt),
@@ -39,7 +38,6 @@ export class IssueAnalytics {
           return { date: i.createdAt, comments: i.comments.totalCount };
         }),
       (value) => value.comments,
-      false,
     );
 
     const closeDates = issues
@@ -56,9 +54,9 @@ export class IssueAnalytics {
 
   generateMonthlyAverages(
     issues: IssueNode[],
-  ): IssuesMetrics["monthlyAverages"] {
+  ): IssuesMetrics["monthlyMetrics"] {
     this.logger.debug("Calculating monthly averages");
-    const averageTimeToFirstComment = calculateAveragePerMonth(
+    const averageTimeToFirstComment = gatherValuesPerMonth(
       issues
         .filter(({ comments }) => comments.totalCount > 0)
         .map((issue) => {
@@ -73,7 +71,7 @@ export class IssueAnalytics {
       (value) => value.daysToFirstComment,
     );
 
-    const averageTimeToClose = calculateAveragePerMonth(
+    const averageTimeToClose = gatherValuesPerMonth(
       issues
         .filter(({ closedAt }) => !!closedAt)
         .map((issue) => {
@@ -88,7 +86,7 @@ export class IssueAnalytics {
       (value) => value.daysToClose,
     );
 
-    const averageCommentsPerMonth = calculateAveragePerMonth(
+    const averageCommentsPerMonth = gatherValuesPerMonth(
       issues.map((issue) => {
         return { date: issue.createdAt, comments: issue.comments.totalCount };
       }),
@@ -99,6 +97,41 @@ export class IssueAnalytics {
       timeToFirstComment: averageTimeToFirstComment,
       closeTime: averageTimeToClose,
       comments: averageCommentsPerMonth,
+    };
+  }
+
+  generateTotalMetrics(issues: IssueNode[]): IssuesMetrics["totalMetrics"] {
+    this.logger.debug("Calculating the metrics on the totality of time");
+
+    const totalComments = issues.map(({ comments }) => comments.totalCount);
+    const totalCloseTime = issues
+      .map((issue) =>
+        issue.closedAt
+          ? calculateDaysBetweenDates(issue.createdAt, issue.closedAt)
+          : -1,
+      )
+      .filter((v) => v > -1);
+    const totalTimeToFirstComment = issues
+      .filter(({ comments }) => comments.nodes.length > 0)
+      .map((issue) =>
+        calculateDaysBetweenDates(
+          issue.createdAt,
+          issue.comments.nodes[0].createdAt,
+        ),
+      );
+    return {
+      comments: {
+        median: Math.round(median(totalComments)),
+        average: Math.round(average(totalComments)),
+      },
+      closeTime: {
+        median: Math.round(median(totalCloseTime)),
+        average: Math.round(average(totalCloseTime)),
+      },
+      timeToFirstComment: {
+        median: Math.round(median(totalTimeToFirstComment)),
+        average: Math.round(average(totalTimeToFirstComment)),
+      },
     };
   }
 }
