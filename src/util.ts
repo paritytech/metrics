@@ -1,9 +1,9 @@
 import { debug, error, info, warning } from "@actions/core";
 import moment from "moment";
-import { average, median } from "simple-statistics";
 
 import { ActionLogger } from "./github/types";
 import { MonthMetrics, MonthWithMatch } from "./report/types";
+import { toTotalMetrics } from "./report/utils";
 
 export function generateCoreLogger(): ActionLogger {
   return { info, debug, warn: warning, error };
@@ -94,8 +94,7 @@ export const gatherValuesPerMonth = <T extends { date: string }>(
       // We push the previous match and reset it
       monthsWithMatches.push({
         month: currentMonth.format("MMM YYYY"),
-        median: Math.round(median(currentMonthValues)),
-        average: Math.round(average(currentMonthValues)),
+        ...toTotalMetrics(currentMonthValues),
       });
 
       // We change the currentMonth variable to the following one
