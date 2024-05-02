@@ -61,7 +61,7 @@ export interface IssuesMetrics {
 }
 
 export type MonthWithMatch = [string, number];
-export type TotalMetrics = { median: number; average: number };
+export type TotalMetrics = { median: number | null; average: number | null };
 export type MonthMetrics = TotalMetrics & { month: string };
 
 export type DurationWithInitialDate = {

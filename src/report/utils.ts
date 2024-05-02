@@ -18,7 +18,7 @@ export const toTotalMetrics = (metrics: number[]): TotalMetrics => {
   }
 
   return {
-    median: -1,
-    average: -1,
+    median: null,
+    average: null,
   };
 };

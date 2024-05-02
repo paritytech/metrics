@@ -44,14 +44,14 @@ const generatePrSummary = (
         dateFormat  X
         axisFormat %s
         section To close
-        Average ${prMetrics.totalMetrics.mergeTime.average} : 0, ${prMetrics.totalMetrics.mergeTime.average}
-        Median ${prMetrics.totalMetrics.mergeTime.median} : 0, ${prMetrics.totalMetrics.mergeTime.median}
+        Average ${prMetrics.totalMetrics.mergeTime.average ?? "NO DATA"} : 0, ${prMetrics.totalMetrics.mergeTime.average ?? 0}
+        Median ${prMetrics.totalMetrics.mergeTime.median ?? "NO DATA"} : 0, ${prMetrics.totalMetrics.mergeTime.median ?? 0}
         section To first review
-        Average ${prMetrics.totalMetrics.timeToFirstReview.average} : 0, ${prMetrics.totalMetrics.timeToFirstReview.average}
-        Median ${prMetrics.totalMetrics.timeToFirstReview.median} : 0, ${prMetrics.totalMetrics.timeToFirstReview.median}
+        Average ${prMetrics.totalMetrics.timeToFirstReview.average ?? "NO DATA"} : 0, ${prMetrics.totalMetrics.timeToFirstReview.average ?? 0}
+        Median ${prMetrics.totalMetrics.timeToFirstReview.median ?? "NO DATA"} : 0, ${prMetrics.totalMetrics.timeToFirstReview.median ?? 0}
         section Reviews per PR
-        Average ${prMetrics.totalMetrics.reviews.average} : 0, ${prMetrics.totalMetrics.reviews.average}
-        Median ${prMetrics.totalMetrics.reviews.median} : 0, ${prMetrics.totalMetrics.reviews.median}
+        Average ${prMetrics.totalMetrics.reviews.average ?? "NO DATA"} : 0, ${prMetrics.totalMetrics.reviews.average ?? 0}
+        Median ${prMetrics.totalMetrics.reviews.median ?? "NO DATA"} : 0, ${prMetrics.totalMetrics.reviews.median ?? 0}
   \`\`\``;
 
   text = text
@@ -183,14 +183,14 @@ const generateIssueSummary = (
         dateFormat  X
         axisFormat %s
         section Time to close
-        Median ${issueMetrics.totalMetrics.closeTime.median} : 0, ${issueMetrics.totalMetrics.closeTime.median}
-        Average ${issueMetrics.totalMetrics.closeTime.average} : 0, ${issueMetrics.totalMetrics.closeTime.average}
+        Median ${issueMetrics.totalMetrics.closeTime.median ?? "NO DATA"} : 0, ${issueMetrics.totalMetrics.closeTime.median ?? 0}
+        Average ${issueMetrics.totalMetrics.closeTime.average ?? "NO DATA"} : 0, ${issueMetrics.totalMetrics.closeTime.average ?? 0}
         section Time to first comment
-        Median ${issueMetrics.totalMetrics.timeToFirstComment.median} : 0, ${issueMetrics.totalMetrics.timeToFirstComment.median}
-        Average ${issueMetrics.totalMetrics.timeToFirstComment.average} : 0, ${issueMetrics.totalMetrics.timeToFirstComment.average}
+        Median ${issueMetrics.totalMetrics.timeToFirstComment.median ?? "NO DATA"} : 0, ${issueMetrics.totalMetrics.timeToFirstComment.median ?? 0}
+        Average ${issueMetrics.totalMetrics.timeToFirstComment.average ?? "NO DATA"} : 0, ${issueMetrics.totalMetrics.timeToFirstComment.average ?? 0}
         section Average comments per issue
-        Median ${issueMetrics.totalMetrics.comments.median} : 0, ${issueMetrics.totalMetrics.comments.median}
-        Average ${issueMetrics.totalMetrics.comments.average} : 0, ${issueMetrics.totalMetrics.comments.average}
+        Median ${issueMetrics.totalMetrics.comments.median ?? 0} : 0, ${issueMetrics.totalMetrics.comments.median ?? 0}
+        Average ${issueMetrics.totalMetrics.comments.average ?? 0} : 0, ${issueMetrics.totalMetrics.comments.average ?? 0}
   \`\`\``;
 
   text = text
@@ -277,7 +277,7 @@ gantt
   axisFormat %s
   ${months
     .map(({ month, median, average }) =>
-      median + average > -1
+      median && average
         ? `section ${month}\n    Average ${average} : 0, ${average}\n    Median ${median} : 0, ${median}`
         : "",
     )
