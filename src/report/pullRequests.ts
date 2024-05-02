@@ -1,5 +1,4 @@
 import moment from "moment";
-import { average, median } from "simple-statistics";
 
 import { ActionLogger, PullRequestNode } from "../github/types";
 import {
@@ -151,9 +150,9 @@ export class PullRequestAnalytics {
           : undefined,
         review: timeToFirstReview
           ? {
-            date: firstReview as string,
-            daysSinceCreation: timeToFirstReview,
-          }
+              date: firstReview as string,
+              daysSinceCreation: timeToFirstReview,
+            }
           : undefined,
         additions: pr.additions,
         deletions: pr.deletions,

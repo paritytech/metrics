@@ -1,6 +1,7 @@
 import moment from "moment";
-import { TotalMetrics } from "./types";
 import { average, median } from "simple-statistics";
+
+import { TotalMetrics } from "./types";
 
 /** Return the difference of two dates as a positive integer */
 export const calculateDaysBetweenDates = (
@@ -12,12 +13,12 @@ export const toTotalMetrics = (metrics: number[]): TotalMetrics => {
   if (metrics.length > 0) {
     return {
       median: Math.round(median(metrics)),
-      average: Math.round(average(metrics))
+      average: Math.round(average(metrics)),
     };
   }
 
   return {
     median: -1,
-    average: -1
-  }
-}
+    average: -1,
+  };
+};

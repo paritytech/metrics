@@ -1,5 +1,3 @@
-import { average, median } from "simple-statistics";
-
 import { ActionLogger, IssueNode } from "../github/types";
 import {
   calculateEventsPerMonth,
@@ -10,7 +8,7 @@ import { IssuesMetrics } from "./types";
 import { calculateDaysBetweenDates, toTotalMetrics } from "./utils";
 
 export class IssueAnalytics {
-  constructor(private readonly logger: ActionLogger) { }
+  constructor(private readonly logger: ActionLogger) {}
 
   getAnalytics(issues: IssueNode[]): IssuesMetrics {
     const monthlyTotals = this.generateMonthlyTotals(issues);

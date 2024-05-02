@@ -276,10 +276,10 @@ gantt
   dateFormat X
   axisFormat %s
   ${months
-    .map(
-      ({ month, median, average }) =>
-        (median + average > -1) ?
-          `section ${month}\n    Average ${average} : 0, ${average}\n    Median ${median} : 0, ${median}` : "",
+    .map(({ month, median, average }) =>
+      median + average > -1
+        ? `section ${month}\n    Average ${average} : 0, ${average}\n    Median ${median} : 0, ${median}`
+        : "",
     )
     .join("\n    ")}
 \`\`\``;
