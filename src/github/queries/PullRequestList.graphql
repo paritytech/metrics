@@ -15,6 +15,9 @@ query PullRequests($cursor: String, $owner: String!, $repo: String!) {
           mergedAt
           additions
           deletions
+          author {
+            login
+          }
           reviews(first: 100) {
             totalCount
             nodes {

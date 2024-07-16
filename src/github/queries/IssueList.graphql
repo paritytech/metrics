@@ -13,6 +13,9 @@ query Issues($cursor: String, $owner: String!, $repo: String!) {
           state
           createdAt
           closedAt
+          author {
+            login
+          }
           comments(first: 100) {
             totalCount
             nodes {
