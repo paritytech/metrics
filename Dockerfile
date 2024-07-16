@@ -1,16 +1,16 @@
-FROM node:20 as Builder
+FROM node:22 as Builder
 
 WORKDIR /action
 
 COPY package.json yarn.lock ./
 
-RUN yarn install --frozen-lockfile --ignore-scripts
+RUN yarn install --immutable --ignore-scripts
 
 COPY . .
 
 RUN yarn run build
 
-FROM node:20-slim
+FROM node:22-slim
 
 COPY --from=Builder /action/dist /action
 
