@@ -8,8 +8,8 @@
     "build": "ncc build --license LICENSE",
     "cli": "ncc build src/cli.ts -o .cli && node .cli",
     "test": "jest",
-    "fix": "eslint --fix 'src/**/*' && prettier . --write",
-    "lint": "eslint 'src/**/*'",
+    "fix": "npx eslint --fix 'src/**/*.ts' && npx prettier --write 'src/**/*.{ts,yml}'",
+    "lint": "npx eslint 'src/**/*.ts' && npx prettier --check 'src/**/*.{ts,yml}'",
     "copy": "node scripts/copy-files.js",
     "postinstall": "yarn run copy",
     "prebuild": "yarn run copy"
