@@ -5,6 +5,7 @@ import { envsafe, str } from "envsafe";
 import { existsSync } from "fs";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import { Converter } from "showdown";
+import { exec } from "child_process";
 
 import { calculateMetrics, getData } from "./analytics";
 import { ActionLogger, IssueNode, PullRequestNode } from "./github/types";
@@ -66,6 +67,20 @@ const fetchInformation = async (): Promise<{
   return { prs, issues };
 };
 
+function getCommandLine(): string {
+  switch (process.platform) {
+    case "darwin":
+      return "open";
+    case "win32":
+      return "start";
+    // @ts-ignore process.platform doesn't have win64 for some reason
+    case "win64":
+      return "start";
+    default:
+      return "xdg-open";
+  }
+}
+
 const action = async () => {
   const { prs, issues } = await fetchInformation();
   const report = calculateMetrics(chalkLogger, repo, prs, issues);
@@ -77,8 +92,9 @@ const action = async () => {
   console.log("Converting text to HTML");
   await writeFile(
     "./index.html",
-    generateSite(`${env.OWNER}/${env.REPO}`, htmlText),
+    generateSite(`${env.OWNER}/${env.REPO}`, htmlText)
   );
+  exec(`${getCommandLine()} ./index.html`);
 };
 
 action()
