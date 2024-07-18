@@ -28,12 +28,15 @@ interface IssueList {
   };
 }
 
+const WAIT_TIME = 90_000;
+const PAGE_BREAK = 3;
+
 /** API class that uses the default token to access the data from the pull request and the repository */
 export class RepositoryApi {
   constructor(
     private readonly api: GitHubClient,
     private readonly logger: ActionLogger,
-    private readonly repo: { owner: string; repo: string },
+    private readonly repo: { owner: string; repo: string }
   ) {
     logger.debug(`API has been set up for ${repo.owner}/${repo.repo}`);
   }
@@ -45,7 +48,7 @@ export class RepositoryApi {
     let currentPage: number = 0;
 
     this.logger.info(
-      `Extracting all PR information from ${this.repo.owner}/${this.repo.repo}`,
+      `Extracting all PR information from ${this.repo.owner}/${this.repo.repo}`
     );
     do {
       const query: PullRequestList = await this.api.graphql<PullRequestList>(
@@ -53,7 +56,7 @@ export class RepositoryApi {
         {
           cursor,
           ...this.repo,
-        },
+        }
       );
 
       const totalPages =
@@ -63,10 +66,12 @@ export class RepositoryApi {
       prs.push(...nodes);
       hasNextPage = pageInfo.hasNextPage;
       cursor = pageInfo.endCursor;
-      if (hasNextPage && currentPage % 5 === 0) {
-        this.logger.debug("Pausing for one minute to not hit secondary limits");
+      if (hasNextPage && currentPage % PAGE_BREAK === 0) {
+        this.logger.debug(
+          `Pausing for ${WAIT_TIME / 1000} seconds to not hit secondary limits`
+        );
         await new Promise<void>((resolve) =>
-          setTimeout(() => resolve(), 60_000),
+          setTimeout(() => resolve(), WAIT_TIME)
         );
       }
     } while (hasNextPage);
@@ -83,7 +88,7 @@ export class RepositoryApi {
     let currentPage: number = 0;
 
     this.logger.info(
-      `Extracting all issue information from ${this.repo.owner}/${this.repo.repo}`,
+      `Extracting all issue information from ${this.repo.owner}/${this.repo.repo}`
     );
     do {
       const query: IssueList = await this.api.graphql<IssueList>(
@@ -91,7 +96,7 @@ export class RepositoryApi {
         {
           cursor,
           ...this.repo,
-        },
+        }
       );
       const totalPages =
         Math.floor(query.repository.issues.totalCount / 100) + 1;
@@ -101,10 +106,12 @@ export class RepositoryApi {
       hasNextPage = pageInfo.hasNextPage;
       cursor = pageInfo.endCursor;
 
-      if (hasNextPage && currentPage % 5 === 0) {
-        this.logger.debug("Pausing for one minute to not hit secondary limits");
+      if (hasNextPage && currentPage % PAGE_BREAK === 0) {
+        this.logger.debug(
+          `Pausing for ${WAIT_TIME / 1000} seconds to not hit secondary limits`
+        );
         await new Promise<void>((resolve) =>
-          setTimeout(() => resolve(), 60_000),
+          setTimeout(() => resolve(), 60_000)
         );
       }
     } while (hasNextPage);
