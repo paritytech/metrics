@@ -13,6 +13,7 @@ query Issues($cursor: String, $owner: String!, $repo: String!) {
           state
           createdAt
           closedAt
+          authorAssociation
           author {
             login
           }

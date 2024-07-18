@@ -45,6 +45,7 @@ export interface IssueNode {
   createdAt: string;
   closedAt: string | null;
   author: Author;
+  authorAssociation: "NONE" | "CONTRIBUTOR" | "MEMBER" | string;
   comments: {
     totalCount: number;
     nodes: {
