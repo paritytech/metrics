@@ -28,8 +28,8 @@ interface IssueList {
   };
 }
 
-const WAIT_TIME = 90_000;
-const PAGE_BREAK = 3;
+const WAIT_TIME = 60_000;
+const PAGE_BREAK = 5;
 
 /** API class that uses the default token to access the data from the pull request and the repository */
 export class RepositoryApi {
@@ -60,7 +60,7 @@ export class RepositoryApi {
       );
 
       const totalPages =
-        Math.floor(query.repository.pullRequests.totalCount / 100) + 1;
+        Math.floor(query.repository.pullRequests.totalCount / 50) + 1;
       this.logger.info(`Querying page ${++currentPage}/${totalPages}`);
       const { nodes, pageInfo } = query.repository.pullRequests;
       prs.push(...nodes);
@@ -99,7 +99,7 @@ export class RepositoryApi {
         }
       );
       const totalPages =
-        Math.floor(query.repository.issues.totalCount / 100) + 1;
+        Math.floor(query.repository.issues.totalCount / 50) + 1;
       this.logger.info(`Querying page ${++currentPage}/${totalPages}`);
       const { nodes, pageInfo } = query.repository.issues;
       issues.push(...nodes);
@@ -111,7 +111,7 @@ export class RepositoryApi {
           `Pausing for ${WAIT_TIME / 1000} seconds to not hit secondary limits`
         );
         await new Promise<void>((resolve) =>
-          setTimeout(() => resolve(), 60_000)
+          setTimeout(() => resolve(), WAIT_TIME)
         );
       }
     } while (hasNextPage);
