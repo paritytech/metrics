@@ -28,6 +28,9 @@ interface IssueList {
   };
 }
 
+const WAIT_TIME = 60_000;
+const PAGE_BREAK = 5;
+
 /** API class that uses the default token to access the data from the pull request and the repository */
 export class RepositoryApi {
   constructor(
@@ -57,16 +60,18 @@ export class RepositoryApi {
       );
 
       const totalPages =
-        Math.floor(query.repository.pullRequests.totalCount / 100) + 1;
+        Math.floor(query.repository.pullRequests.totalCount / 50) + 1;
       this.logger.info(`Querying page ${++currentPage}/${totalPages}`);
       const { nodes, pageInfo } = query.repository.pullRequests;
       prs.push(...nodes);
       hasNextPage = pageInfo.hasNextPage;
       cursor = pageInfo.endCursor;
-      if (hasNextPage && currentPage % 5 === 0) {
-        this.logger.debug("Pausing for one minute to not hit secondary limits");
+      if (hasNextPage && currentPage % PAGE_BREAK === 0) {
+        this.logger.debug(
+          `Pausing for ${WAIT_TIME / 1000} seconds to not hit secondary limits`,
+        );
         await new Promise<void>((resolve) =>
-          setTimeout(() => resolve(), 60_000),
+          setTimeout(() => resolve(), WAIT_TIME),
         );
       }
     } while (hasNextPage);
@@ -94,17 +99,19 @@ export class RepositoryApi {
         },
       );
       const totalPages =
-        Math.floor(query.repository.issues.totalCount / 100) + 1;
+        Math.floor(query.repository.issues.totalCount / 50) + 1;
       this.logger.info(`Querying page ${++currentPage}/${totalPages}`);
       const { nodes, pageInfo } = query.repository.issues;
       issues.push(...nodes);
       hasNextPage = pageInfo.hasNextPage;
       cursor = pageInfo.endCursor;
 
-      if (hasNextPage && currentPage % 5 === 0) {
-        this.logger.debug("Pausing for one minute to not hit secondary limits");
+      if (hasNextPage && currentPage % PAGE_BREAK === 0) {
+        this.logger.debug(
+          `Pausing for ${WAIT_TIME / 1000} seconds to not hit secondary limits`,
+        );
         await new Promise<void>((resolve) =>
-          setTimeout(() => resolve(), 60_000),
+          setTimeout(() => resolve(), WAIT_TIME),
         );
       }
     } while (hasNextPage);

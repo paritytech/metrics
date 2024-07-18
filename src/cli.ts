@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { getOctokit } from "@actions/github";
 import chalk from "chalk";
+import { exec } from "child_process";
 import { envsafe, str } from "envsafe";
 import { existsSync } from "fs";
 import { mkdir, readFile, writeFile } from "fs/promises";
@@ -22,6 +23,10 @@ const env = envsafe({
   GITHUB_TOKEN: str({
     example: "Personal Access Token",
   }),
+  AUTHOR: str({
+    example: "username",
+    allowEmpty: true,
+  }),
 });
 
 const chalkLogger: ActionLogger = {
@@ -35,6 +40,8 @@ const repo = {
   owner: env.OWNER,
   repo: env.REPO,
 };
+
+const author: string | undefined = env.AUTHOR;
 
 const fetchInformation = async (): Promise<{
   prs: PullRequestNode[];
@@ -66,9 +73,25 @@ const fetchInformation = async (): Promise<{
   return { prs, issues };
 };
 
+function getCommandLine(): string {
+  // "win64" is not inside the enum, so we must circumvent it somehow
+  if (process.platform.startsWith("win")) {
+    return "start";
+  }
+
+  switch (process.platform) {
+    case "darwin":
+      return "open";
+    case "win32":
+      return "start";
+    default:
+      return "xdg-open";
+  }
+}
+
 const action = async () => {
   const { prs, issues } = await fetchInformation();
-  const report = calculateMetrics(chalkLogger, repo, prs, issues);
+  const report = calculateMetrics(chalkLogger, repo, prs, issues, author);
 
   const markdownContent = report.summary.stringify();
   await writeFile("./report.md", markdownContent);
@@ -79,6 +102,7 @@ const action = async () => {
     "./index.html",
     generateSite(`${env.OWNER}/${env.REPO}`, htmlText),
   );
+  exec(`${getCommandLine()} ./index.html`);
 };
 
 action()

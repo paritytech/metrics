@@ -7,20 +7,44 @@ Supports obtaining metrics from:
 - Pull Requests
 - Issues
 
+It also supports obtaining user metrics related to a repository.
+
 ## To start
 
 ### Run from CLI
 
+You need to create a [Personal Access Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) with the options:
+- [ ] repo
+  - [x] public_repo
+
+If the repository is private you will need to enable the `repo` option.
+
 Copy `example.env` as `.env` and replace the variables with your own.
+
+> If you want to get a user's related metric, write their username in the `AUTHOR` field, if not, just leave it empty.
 
 Run:
 
 - `yarn install`
 - `yarn run cli`
 
-It will generate a file named `report.md` as the output.
+It will generate two files:
+- `report.md`
+- `index.html`
 
 ### Run as GitHub action
+
+#### Run in this repository
+
+You can use the workflow here: [![Fetch repository metrics](https://github.com/paritytech/metrics/actions/workflows/generate-repo-metrics.yml/badge.svg)](https://github.com/paritytech/metrics/actions/workflows/generate-repo-metrics.yml) <- click here
+
+And select `Run workflow` to run the system in this repository.
+
+After a couple of minutes, the [GitHub action summary](https://github.blog/2022-05-09-supercharging-github-actions-with-job-summaries/) will contain all the results.
+
+You can also use the user metrics workflow here: [![Fetch user metrics](https://github.com/paritytech/metrics/actions/workflows/generate-user-metrics.yml/badge.svg)](https://github.com/paritytech/metrics/actions/workflows/generate-user-metrics.yml)
+
+#### Install in your own repository
 
 Install this action in your repository:
 
@@ -57,6 +81,8 @@ jobs:
 - `repo`: Name of the repository to crawl.
   - **Optional**.
   - Default to the repository's name where this action is running.
+- `author`: Username of the account to obtain metrics
+  - **Optional**: Setting this will only get the user's metrics and not the repository's.
 
 #### Outputs
 

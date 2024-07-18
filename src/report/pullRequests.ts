@@ -9,9 +9,10 @@ import {
 import { DurationWithInitialDate, PullRequestMetrics, Reviewer } from "./types";
 import { toTotalMetrics } from "./utils";
 
-interface PullRequestInfo {
+export interface PullRequestInfo {
   number: number;
   creation: string;
+  author: string;
   /** Amount of reviews */
   reviews: number;
   /** Date and duration until it was closed */
@@ -37,7 +38,7 @@ export class PullRequestAnalytics {
       merged: prList.filter(({ state }) => state === "MERGED").length,
     };
 
-    const prs = this.getPullRequestAverages(prList);
+    const prs = PullRequestAnalytics.getPullRequestAverages(prList);
     const monthlyTotals = this.generateMonthlyTotals(prs);
     const monthlyMetrics = this.generateMonthlyMetrics(prs);
     const totalMetrics = this.generateTotalMetrics(prs);
@@ -45,7 +46,9 @@ export class PullRequestAnalytics {
     const reviewList = prList.flatMap((pr) => pr.reviews.nodes);
     const reviewers = this.getTopMonthlyReviewers(reviewList);
 
-    const topReviewer = this.getTopReviewer(reviewList);
+    const topReviewer = this.getTopReviewer(
+      reviewList.filter((r) => !!r.author?.login),
+    );
 
     return {
       ...prMetric,
@@ -126,7 +129,7 @@ export class PullRequestAnalytics {
     };
   }
 
-  getPullRequestAverages(prList: PullRequestNode[]): PullRequestInfo[] {
+  static getPullRequestAverages(prList: PullRequestNode[]): PullRequestInfo[] {
     const averages: PullRequestInfo[] = [];
 
     for (const pr of prList) {
@@ -145,6 +148,7 @@ export class PullRequestAnalytics {
       averages.push({
         number: pr.number,
         creation: pr.createdAt,
+        author: pr.author.login,
         close: timeToClose
           ? { date: pr.mergedAt as string, daysSinceCreation: timeToClose }
           : undefined,
@@ -187,7 +191,12 @@ export class PullRequestAnalytics {
     for (const review of reviews) {
       if (!review.submittedAt) {
         this.logger.debug(
-          `Skipping review from ${review.author.login} as it is has a null date`,
+          `Skipping review from ${review.author?.login} as it is has a null date`,
+        );
+        continue;
+      } else if (!review.author?.login) {
+        this.logger.debug(
+          `Skipping review ${review.submittedAt} because author object is empty`,
         );
         continue;
       }
@@ -195,7 +204,7 @@ export class PullRequestAnalytics {
       if (currentMonth.diff(moment(review.submittedAt), "month") == 0) {
         const reviewerIndex = reviewsPerUser
           .map((u) => u.user)
-          .indexOf(review.author.login);
+          .indexOf(review.author?.login);
         if (reviewerIndex > -1) {
           // If the user exists, we increment his reviews
           reviewsPerUser[reviewerIndex].reviews += 1;

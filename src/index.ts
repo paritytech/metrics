@@ -24,16 +24,27 @@ const getRepo = (ctx: Context) => {
 
 const repo = getRepo(context);
 
+const author = getInput("author", { required: false });
+
 setOutput("repo", `${repo.owner}/${repo.repo}`);
 
 const token = getInput("GITHUB_TOKEN", { required: true });
-getMetrics(getOctokit(token), generateCoreLogger(), repo)
+const logger = generateCoreLogger();
+getMetrics(getOctokit(token), logger, repo, author)
   .then(async (result) => {
     await writeFile("./report.md", result.summary.stringify());
 
     // We set the report for both outputs
-    setOutput("pr-report", JSON.stringify(result.prMetrics));
-    setOutput("issue-report", JSON.stringify(result.issueMetrics));
+    if (result.prMetrics) {
+      setOutput("pr-report", JSON.stringify(result.prMetrics));
+    } else {
+      logger.warn("No 'pr-report' generated as output");
+    }
+    if (result.issueMetrics) {
+      setOutput("issue-report", JSON.stringify(result.issueMetrics));
+    } else {
+      logger.warn("No 'issue-report' generated as output");
+    }
 
     // We write the HTML file
     const converter = new Converter({ ghCodeBlocks: true });

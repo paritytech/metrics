@@ -6,13 +6,17 @@ import {
   MonthMetrics,
   PullRequestMetrics,
 } from "./report/types";
+import { UserMetrics } from "./report/user";
 
 export const generateSummary = (
   repo: { owner: string; repo: string },
   prMetrics: PullRequestMetrics,
   issueMetrics: IssuesMetrics,
 ): typeof summary => {
-  let text = summary.addHeading(`Metrics for ${repo.owner}/${repo.repo}`, 1);
+  let text = summary.addHeading(
+    `Metrics for <code>${repo.owner}/${repo.repo}</code>`,
+    1,
+  );
 
   text = generatePrSummary(prMetrics, text);
 
@@ -283,3 +287,52 @@ gantt
     )
     .join("\n    ")}
 \`\`\``;
+
+export const generateUserSummary = (
+  author: string,
+  repo: { owner: string; repo: string },
+  metrics: UserMetrics,
+): typeof summary => {
+  let text = summary.addHeading(
+    `Metrics for @${author} in <code>${repo.owner}/${repo.repo}</code>`,
+    1,
+  );
+
+  text = text
+    .addHeading("Pull Request Metrics", 2)
+    .addEOL()
+    .addRaw(monthWithMatchToGanttChart("Opened PRs per month", metrics.created))
+    .addEOL()
+    .addRaw(monthWithMatchToGanttChart("Merged PRs per month", metrics.closed))
+    .addEOL()
+    .addRaw(
+      monthWithMatchToGanttChart("Reviews per month", metrics.reviewsPerMonth),
+    )
+    .addEOL()
+    .addRaw(
+      monthWithMatchToGanttChart(
+        "Average comments per review",
+        metrics.commentsPerReview,
+      ),
+    );
+
+  text = text
+    .addEOL()
+    .addHeading("Issues metrics", 2)
+    .addEOL()
+    .addRaw(
+      monthWithMatchToGanttChart(
+        "Participated Issues per month",
+        metrics.participatedIssuesPerMonth,
+      ),
+    )
+    .addEOL()
+    .addRaw(
+      monthWithMatchToGanttChart(
+        "Participated Issues from external contributors per month",
+        metrics.nonOrgParticipatedIssuesPerMonth,
+      ),
+    );
+
+  return text;
+};

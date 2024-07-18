@@ -1,7 +1,7 @@
 query PullRequests($cursor: String, $owner: String!, $repo: String!) {
   repository(owner: $owner, name: $repo) {
     pullRequests(
-      first: 100
+      first: 50
       orderBy: { field: UPDATED_AT, direction: ASC }
       after: $cursor
     ) {
@@ -15,6 +15,9 @@ query PullRequests($cursor: String, $owner: String!, $repo: String!) {
           mergedAt
           additions
           deletions
+          author {
+            login
+          }
           reviews(first: 100) {
             totalCount
             nodes {
@@ -24,6 +27,9 @@ query PullRequests($cursor: String, $owner: String!, $repo: String!) {
                 author {
                   login
                   avatarUrl
+                }
+                comments {
+                  totalCount
                 }
               }
             }
