@@ -7,6 +7,8 @@ Supports obtaining metrics from:
 - Pull Requests
 - Issues
 
+It also supports obtaining user metrics related to a repository.
+
 ## To start
 
 ### Run from CLI
@@ -19,12 +21,16 @@ If the repository is private you will need to enable the `repo` option.
 
 Copy `example.env` as `.env` and replace the variables with your own.
 
+> If you want to get a user's related metric, write their username in the `author` field, if not, just delete this field.
+
 Run:
 
 - `yarn install`
 - `yarn run cli`
 
-It will generate a file named `report.md` as the output.
+It will generate two files:
+- `report.md`
+- `index.html`
 
 ### Run as GitHub action
 
