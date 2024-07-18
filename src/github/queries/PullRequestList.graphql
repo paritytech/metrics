@@ -28,6 +28,9 @@ query PullRequests($cursor: String, $owner: String!, $repo: String!) {
                   login
                   avatarUrl
                 }
+                comments {
+                  totalCount
+                }
               }
             }
           }

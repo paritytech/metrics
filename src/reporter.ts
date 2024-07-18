@@ -6,11 +6,12 @@ import {
   MonthMetrics,
   PullRequestMetrics,
 } from "./report/types";
+import { UserMetrics } from "./report/user";
 
 export const generateSummary = (
   repo: { owner: string; repo: string },
   prMetrics: PullRequestMetrics,
-  issueMetrics: IssuesMetrics,
+  issueMetrics: IssuesMetrics
 ): typeof summary => {
   let text = summary.addHeading(`Metrics for ${repo.owner}/${repo.repo}`, 1);
 
@@ -23,7 +24,7 @@ export const generateSummary = (
 
 const generatePrSummary = (
   prMetrics: PullRequestMetrics,
-  text: typeof summary,
+  text: typeof summary
 ): typeof summary => {
   const prChart = `\`\`\`mermaid
   pie title Pull Requests for the repository
@@ -66,22 +67,22 @@ const generatePrSummary = (
     .addRaw(
       monthWithMetricsToGanttChart(
         "Time to first review (hours)",
-        prMetrics.monthlyMetrics.timeToFirstReview,
-      ),
+        prMetrics.monthlyMetrics.timeToFirstReview
+      )
     )
     .addEOL()
     .addRaw(
       monthWithMetricsToGanttChart(
         "Time to merge (hours)",
-        prMetrics.monthlyMetrics.mergeTime,
-      ),
+        prMetrics.monthlyMetrics.mergeTime
+      )
     )
     .addEOL()
     .addRaw(
       monthWithMetricsToGanttChart(
         "Reviews per PR per month",
-        prMetrics.monthlyMetrics.reviews,
-      ),
+        prMetrics.monthlyMetrics.reviews
+      )
     )
     .addEOL();
 
@@ -91,29 +92,29 @@ const generatePrSummary = (
     .addRaw(
       monthWithMatchToGanttChart(
         "New PRs per month",
-        prMetrics.monthlyTotals.creation,
-      ),
+        prMetrics.monthlyTotals.creation
+      )
     )
     .addEOL()
     .addRaw(
       monthWithMatchToGanttChart(
         "Merged PRs per month",
-        prMetrics.monthlyTotals.closed,
-      ),
+        prMetrics.monthlyTotals.closed
+      )
     )
     .addEOL()
     .addRaw(
       monthWithMetricsToGanttChart(
         "Lines changed per month",
-        prMetrics.monthlyMetrics.linesChanged,
-      ),
+        prMetrics.monthlyMetrics.linesChanged
+      )
     )
     .addEOL()
     .addRaw(
       monthWithMatchToGanttChart(
         "Reviews per month",
-        prMetrics.monthlyTotals.reviews,
-      ),
+        prMetrics.monthlyTotals.reviews
+      )
     )
     .addEOL();
 
@@ -126,7 +127,7 @@ const generatePrSummary = (
     ${prMetrics.reviewers
       .map(
         ({ month, user, reviews }) =>
-          `section ${month}\n    ${user} : 0, ${reviews}`,
+          `section ${month}\n    ${user} : 0, ${reviews}`
       )
       .join("\n    ")}
   \`\`\``;
@@ -143,11 +144,11 @@ const generatePrSummary = (
       .addHeading("Reviewer of the month", 4)
       .addImage(
         reviewerOfTheMonth.avatar ?? "",
-        `${reviewerOfTheMonth.user}'s avatar`,
+        `${reviewerOfTheMonth.user}'s avatar`
       )
       .addEOL()
       .addRaw(
-        `@${reviewerOfTheMonth.user} with ${reviewerOfTheMonth.reviews} reviews!`,
+        `@${reviewerOfTheMonth.user} with ${reviewerOfTheMonth.reviews} reviews!`
       )
       .addEOL();
 
@@ -159,7 +160,7 @@ const generatePrSummary = (
       .addImage(topReviewer.avatar, `${topReviewer.user}'s avatar`)
       .addEOL()
       .addRaw(
-        `@${topReviewer.user} with a **total of ${topReviewer.reviews} reviews**!`,
+        `@${topReviewer.user} with a **total of ${topReviewer.reviews} reviews**!`
       );
   }
   return text;
@@ -167,7 +168,7 @@ const generatePrSummary = (
 
 const generateIssueSummary = (
   issueMetrics: IssuesMetrics,
-  text: typeof summary,
+  text: typeof summary
 ): typeof summary => {
   const prChart = `\`\`\`mermaid
   pie title Issues for the repository
@@ -205,22 +206,22 @@ const generateIssueSummary = (
     .addRaw(
       monthWithMetricsToGanttChart(
         "Time to first comment (days)",
-        issueMetrics.monthlyMetrics.timeToFirstComment,
-      ),
+        issueMetrics.monthlyMetrics.timeToFirstComment
+      )
     )
     .addEOL()
     .addRaw(
       monthWithMetricsToGanttChart(
         "Time to close (days)",
-        issueMetrics.monthlyMetrics.closeTime,
-      ),
+        issueMetrics.monthlyMetrics.closeTime
+      )
     )
     .addEOL()
     .addRaw(
       monthWithMetricsToGanttChart(
         "Comments per issue per month",
-        issueMetrics.monthlyMetrics.comments,
-      ),
+        issueMetrics.monthlyMetrics.comments
+      )
     )
     .addEOL();
 
@@ -230,22 +231,22 @@ const generateIssueSummary = (
     .addRaw(
       monthWithMatchToGanttChart(
         "New issues per month",
-        issueMetrics.monthlyTotals.creation,
-      ),
+        issueMetrics.monthlyTotals.creation
+      )
     )
     .addEOL()
     .addRaw(
       monthWithMatchToGanttChart(
         "Closed issues per month",
-        issueMetrics.monthlyTotals.closed,
-      ),
+        issueMetrics.monthlyTotals.closed
+      )
     )
     .addEOL()
     .addRaw(
       monthWithMatchToGanttChart(
         "Comments per month",
-        issueMetrics.monthlyTotals.comments,
-      ),
+        issueMetrics.monthlyTotals.comments
+      )
     )
     .addEOL();
 
@@ -254,7 +255,7 @@ const generateIssueSummary = (
 
 const monthWithMatchToGanttChart = (
   title: string,
-  months: [string, number][],
+  months: [string, number][]
 ): string => `\`\`\`mermaid
 gantt
   title ${title}
@@ -262,14 +263,14 @@ gantt
   axisFormat %s
   ${months
     .map(
-      ([month, matches]) => `section ${month}\n    ${matches} : 0, ${matches}`,
+      ([month, matches]) => `section ${month}\n    ${matches} : 0, ${matches}`
     )
     .join("\n    ")}
 \`\`\``;
 
 const monthWithMetricsToGanttChart = (
   title: string,
-  months: MonthMetrics[],
+  months: MonthMetrics[]
 ): string => `\`\`\`mermaid
 gantt
   title ${title}
@@ -279,7 +280,37 @@ gantt
     .map(({ month, median, average }) =>
       median && average
         ? `section ${month}\n    Average ${average} : 0, ${average}\n    Median ${median} : 0, ${median}`
-        : "",
+        : ""
     )
     .join("\n    ")}
 \`\`\``;
+
+export const generateUserSummary = (
+  author: string,
+  repo: { owner: string; repo: string },
+  metrics: UserMetrics
+): typeof summary => {
+  let text = summary.addHeading(
+    `Metrics for ${author} in ${repo.owner}/${repo.repo}`,
+    1
+  );
+
+  text = text
+    .addEOL()
+    .addRaw(monthWithMatchToGanttChart("Opened PRs per month", metrics.created))
+    .addEOL()
+    .addRaw(monthWithMatchToGanttChart("Merged PRs per month", metrics.closed))
+    .addEOL()
+    .addRaw(
+      monthWithMatchToGanttChart("Reviews per month", metrics.reviewsPerMonth)
+    )
+    .addEOL()
+    .addRaw(
+      monthWithMatchToGanttChart(
+        "Average comments per review",
+        metrics.commentsPerReview
+      )
+    );
+
+  return text;
+};

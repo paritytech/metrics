@@ -10,7 +10,8 @@ import {
 import { IssueAnalytics } from "./report/issues";
 import { PullRequestAnalytics } from "./report/pullRequests";
 import { IssuesMetrics, PullRequestMetrics } from "./report/types";
-import { generateSummary } from "./reporter";
+import { generateSummary, generateUserSummary } from "./reporter";
+import { UserAnalytics } from "./report/user";
 
 type MetricsReport = {
   prMetrics: PullRequestMetrics;
@@ -21,7 +22,7 @@ type MetricsReport = {
 export const getData = async (
   api: GitHubClient,
   logger: ActionLogger,
-  repo: { owner: string; repo: string },
+  repo: { owner: string; repo: string }
 ): Promise<{ prs: PullRequestNode[]; issues: IssueNode[] }> => {
   const repoApi = new RepositoryApi(api, logger, repo);
   const prs = await repoApi.getPullRequests();
@@ -34,7 +35,14 @@ export const calculateMetrics = (
   repo: { owner: string; repo: string },
   prs: PullRequestNode[],
   issues: IssueNode[],
+  author?: string
 ): MetricsReport => {
+  if (author) {
+    const userReport = new UserAnalytics(logger, repo, author);
+    const userMetrics = userReport.generatePullRequestsMetrics(prs);
+    // @ts-ignore
+    return { summary: generateUserSummary(author, repo, userMetrics) };
+  }
   const prReporter = new PullRequestAnalytics(logger, repo);
   const prReport = prReporter.fetchMetricsForPullRequests(prs);
 
@@ -49,7 +57,7 @@ export const calculateMetrics = (
 export const getMetrics = async (
   api: GitHubClient,
   logger: ActionLogger,
-  repo: { owner: string; repo: string },
+  repo: { owner: string; repo: string }
 ): Promise<MetricsReport> => {
   const { prs, issues } = await getData(api, logger, repo);
   return calculateMetrics(logger, repo, prs, issues);

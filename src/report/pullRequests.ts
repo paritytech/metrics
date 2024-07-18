@@ -9,9 +9,10 @@ import {
 import { DurationWithInitialDate, PullRequestMetrics, Reviewer } from "./types";
 import { toTotalMetrics } from "./utils";
 
-interface PullRequestInfo {
+export interface PullRequestInfo {
   number: number;
   creation: string;
+  author: string;
   /** Amount of reviews */
   reviews: number;
   /** Date and duration until it was closed */
@@ -25,7 +26,7 @@ interface PullRequestInfo {
 export class PullRequestAnalytics {
   constructor(
     private readonly logger: ActionLogger,
-    repo: { owner: string; repo: string },
+    repo: { owner: string; repo: string }
   ) {
     logger.debug(`Reporter has been configured for ${repo.owner}/${repo.repo}`);
   }
@@ -37,7 +38,7 @@ export class PullRequestAnalytics {
       merged: prList.filter(({ state }) => state === "MERGED").length,
     };
 
-    const prs = this.getPullRequestAverages(prList);
+    const prs = PullRequestAnalytics.getPullRequestAverages(prList);
     const monthlyTotals = this.generateMonthlyTotals(prs);
     const monthlyMetrics = this.generateMonthlyMetrics(prs);
     const totalMetrics = this.generateTotalMetrics(prs);
@@ -58,7 +59,7 @@ export class PullRequestAnalytics {
   }
 
   generateMonthlyTotals(
-    prList: PullRequestInfo[],
+    prList: PullRequestInfo[]
   ): PullRequestMetrics["monthlyTotals"] {
     this.logger.debug("Calculating monthly metrics");
     const creation = calculateEventsPerMonth(prList.map((pr) => pr.creation));
@@ -66,7 +67,7 @@ export class PullRequestAnalytics {
       prList
         .filter((pr) => !!pr.review)
         .map((pr) => pr.review as DurationWithInitialDate),
-      (value) => value.daysSinceCreation,
+      (value) => value.daysSinceCreation
     );
 
     const closeDates = prList
@@ -83,7 +84,7 @@ export class PullRequestAnalytics {
   }
 
   generateMonthlyMetrics(
-    prs: PullRequestInfo[],
+    prs: PullRequestInfo[]
   ): PullRequestMetrics["monthlyMetrics"] {
     this.logger.debug("Calculating monthly averages");
 
@@ -91,14 +92,14 @@ export class PullRequestAnalytics {
       prs
         .map(({ review }) => review)
         .filter((r) => !!r) as DurationWithInitialDate[],
-      (value) => value.daysSinceCreation,
+      (value) => value.daysSinceCreation
     );
 
     const averageTimeToClose = gatherValuesPerMonth(
       prs
         .map(({ close }) => close)
         .filter((c) => !!c) as DurationWithInitialDate[],
-      (value) => value.daysSinceCreation,
+      (value) => value.daysSinceCreation
     );
 
     const linesChanged = gatherValuesPerMonth(
@@ -108,14 +109,14 @@ export class PullRequestAnalytics {
           daysSinceCreation: Math.abs(pr.additions - pr.deletions),
         };
       }),
-      (value) => value.daysSinceCreation,
+      (value) => value.daysSinceCreation
     );
 
     const averageReviewsPerMonth = gatherValuesPerMonth(
       prs.map((pr) => {
         return { date: pr.creation, reviews: pr.reviews };
       }),
-      (reviews) => reviews.reviews,
+      (reviews) => reviews.reviews
     );
 
     return {
@@ -126,7 +127,7 @@ export class PullRequestAnalytics {
     };
   }
 
-  getPullRequestAverages(prList: PullRequestNode[]): PullRequestInfo[] {
+  static getPullRequestAverages(prList: PullRequestNode[]): PullRequestInfo[] {
     const averages: PullRequestInfo[] = [];
 
     for (const pr of prList) {
@@ -145,6 +146,7 @@ export class PullRequestAnalytics {
       averages.push({
         number: pr.number,
         creation: pr.createdAt,
+        author: pr.author.login,
         close: timeToClose
           ? { date: pr.mergedAt as string, daysSinceCreation: timeToClose }
           : undefined,
@@ -165,7 +167,7 @@ export class PullRequestAnalytics {
 
   /** Returns the reviewer who gave the biggest amount of reviews per month */
   getTopMonthlyReviewers(
-    reviews: PullRequestNode["reviews"]["nodes"],
+    reviews: PullRequestNode["reviews"]["nodes"]
   ): PullRequestMetrics["reviewers"] {
     if (reviews.length === 0) {
       return [];
@@ -173,8 +175,8 @@ export class PullRequestAnalytics {
     reviews.sort((a, b) =>
       moment(a.submittedAt as string).diff(
         moment(b.submittedAt as string),
-        "days",
-      ),
+        "days"
+      )
     );
 
     // We get the month of the first date
@@ -187,7 +189,7 @@ export class PullRequestAnalytics {
     for (const review of reviews) {
       if (!review.submittedAt) {
         this.logger.debug(
-          `Skipping review from ${review.author.login} as it is has a null date`,
+          `Skipping review from ${review.author.login} as it is has a null date`
         );
         continue;
       }
@@ -246,7 +248,7 @@ export class PullRequestAnalytics {
 
   /** Returns the reviewer who gave the biggest amount of reviews */
   getTopReviewer(
-    reviews: PullRequestNode["reviews"]["nodes"],
+    reviews: PullRequestNode["reviews"]["nodes"]
   ): PullRequestMetrics["topReviewer"] {
     if (reviews.length === 0) {
       return null;
@@ -275,7 +277,7 @@ export class PullRequestAnalytics {
   }
 
   generateTotalMetrics(
-    prs: PullRequestInfo[],
+    prs: PullRequestInfo[]
   ): PullRequestMetrics["totalMetrics"] {
     this.logger.debug("Calculating the metrics on the totality of time");
 

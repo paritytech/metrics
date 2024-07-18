@@ -9,6 +9,8 @@ export interface ActionLogger {
 
 export type GitHubClient = InstanceType<typeof GitHub>;
 
+export type Author = { login: string };
+
 export interface PageInfoQuery {
   endCursor: string | null;
   startCursor: string | null;
@@ -24,12 +26,14 @@ export interface PullRequestNode {
   mergedAt: string | null;
   additions: number;
   deletions: number;
+  author: Author;
   reviews: {
     totalCount: number;
     nodes: {
       submittedAt: string | null;
       state: "APPROVED" | "COMMENTED" | "CHANGES_REQUESTED";
       author: { login: string; avatarUrl: string };
+      comments: { totalCount: number };
     }[];
   };
 }
@@ -40,11 +44,12 @@ export interface IssueNode {
   state: "OPEN" | "CLOSED";
   createdAt: string;
   closedAt: string | null;
+  author: Author;
   comments: {
     totalCount: number;
     nodes: {
       createdAt: string;
-      author: { login: string };
+      author: Author;
     }[];
   };
 }
