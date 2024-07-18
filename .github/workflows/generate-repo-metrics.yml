@@ -1,0 +1,43 @@
+name: Generate repository metrics
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+    inputs:
+      org:
+        description: "Organization"
+        type: string
+        required: false
+        default: "polkadot-fellows"
+      repo:
+        description: "Repository"
+        type: string
+        required: false
+        default: "runtimes"
+
+permissions:
+  pages: write
+  id-token: write
+
+jobs:
+  get_metrics:
+    runs-on: ubuntu-latest
+    name: Get repository metrics
+    steps:
+      - uses: paritytech/metrics@main
+        name: Fetch metrics
+        id: metric
+        with:
+          GITHUB_TOKEN: ${{ github.token }}
+          owner: ${{ github.event.inputs.org }}
+          repo: ${{ github.event.inputs.repo }}
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
