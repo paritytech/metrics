@@ -47,23 +47,22 @@ export class UserAnalytics {
   private generateMetricsForPullRequestsAuthorship(
     prList: PullRequestNode[],
   ): Pick<UserMetrics, "created" | "closed"> {
-    console.log("Filtering only PRS that belong to", this.author);
+    this.logger.debug(`Filtering PRs that belong to ${this.author}`);
     const userPRs = prList.filter((pr) => this.isAuthor(pr.author));
-    console.log(
-      "Authors",
-      userPRs.map((pr) => pr.author.login),
+    this.logger.debug(
+      `Found ${userPRs.length} PRs belonging to '${this.author}'`,
     );
     const prs = PullRequestAnalytics.getPullRequestAverages(userPRs);
-    console.log(prs.map((pr) => pr));
 
     const creation = calculateEventsPerMonth(prs.map((pr) => pr.creation));
-    console.log("creation", creation);
 
     const closeDates = prs
       .filter((pr) => pr.close)
       .map(({ close }) => close?.date as string);
     const closedPrPerMonth = calculateEventsPerMonth(closeDates);
-    console.log("close dates", closedPrPerMonth);
+    this.logger.debug(
+      `Found ${closeDates.length} PRs merged by '${this.author}'`,
+    );
 
     return {
       created: creation,
@@ -74,17 +73,20 @@ export class UserAnalytics {
   private generateMetricsForPullRequestsReviews(
     prList: PullRequestNode[],
   ): Pick<UserMetrics, "reviewsPerMonth" | "commentsPerReview"> {
-    console.log("Filtering only PRS that belong to", this.author);
+    this.logger.debug(`Filtering PRs that does not belong to '${this.author}'`);
     // Get the PRs that were NOT created by the user
     const nonUserPRs = prList.filter((pr) => !this.isAuthor(pr.author));
 
     const userReviews = nonUserPRs
       .flatMap((pr) => pr.reviews.nodes)
       .filter((review) => this.isAuthor(review.author));
+
+    this.logger.debug(
+      `Found ${userReviews.length} reviews made by '${this.author}'`,
+    );
     const reviewsPerMonth = calculateEventsPerMonth(
       userReviews.map((r) => r.submittedAt as string).filter((date) => !!date),
     );
-    console.log("reviewsPerMonth", reviewsPerMonth);
     const commentsPerPr = nonUserPRs
       .map((pr) => {
         return {
@@ -105,7 +107,6 @@ export class UserAnalytics {
       commentsPerPr,
       (val) => val.comments,
     );
-    console.log("commentsPerPRPerMonth", commentsPerPRPerMonth);
 
     return {
       reviewsPerMonth,
@@ -121,18 +122,6 @@ export class UserAnalytics {
     UserMetrics,
     "participatedIssuesPerMonth" | "nonOrgParticipatedIssuesPerMonth"
   > {
-    const userIssues = issues.filter(({ author }) => this.isAuthor(author));
-    const openedIssuesPerMonth = calculateEventsPerMonth(
-      userIssues.map(({ createdAt }) => createdAt),
-    );
-    const closedIssuesPerMonth = calculateEventsPerMonth(
-      userIssues
-        .filter(({ closedAt }) => !!closedAt)
-        .map(({ createdAt }) => createdAt),
-    );
-    console.log("openedIssuesPerMonth", openedIssuesPerMonth);
-    console.log("closedIssuesPerMonth", closedIssuesPerMonth);
-
     // Issues where the author has commented
     const participatedIssues = issues.filter((i) =>
       i.comments.nodes.some(({ author }) => this.isAuthor(author)),
@@ -140,6 +129,9 @@ export class UserAnalytics {
 
     const participatedIssuesPerMonth = calculateEventsPerMonth(
       participatedIssues.map(({ createdAt }) => createdAt),
+    );
+    this.logger.debug(
+      `'${this.author}' has participated in ${participatedIssues.length} issues`,
     );
 
     // Issues that do not belong to org members
@@ -149,11 +141,6 @@ export class UserAnalytics {
 
     const nonOrgParticipatedIssuesPerMonth = calculateEventsPerMonth(
       nonOrgIssues.map(({ createdAt }) => createdAt),
-    );
-    console.log("participatedIssuesPerMonth", participatedIssuesPerMonth);
-    console.log(
-      "nonOrgParticipatedIssuesPerMonth",
-      nonOrgParticipatedIssuesPerMonth,
     );
 
     return { participatedIssuesPerMonth, nonOrgParticipatedIssuesPerMonth };
