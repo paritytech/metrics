@@ -16,7 +16,7 @@ on:
         required: false
         default: "runtimes"
       user:
-        description: "Repository"
+        description: "User"
         type: string
         required: true
         default: "username"
