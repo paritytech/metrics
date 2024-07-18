@@ -21,7 +21,7 @@ If the repository is private you will need to enable the `repo` option.
 
 Copy `example.env` as `.env` and replace the variables with your own.
 
-> If you want to get a user's related metric, write their username in the `author` field, if not, just delete this field.
+> If you want to get a user's related metric, write their username in the `AUTHOR` field, if not, just leave it empty.
 
 Run:
 
@@ -81,6 +81,8 @@ jobs:
 - `repo`: Name of the repository to crawl.
   - **Optional**.
   - Default to the repository's name where this action is running.
+- `author`: Username of the account to obtain metrics
+  - **Optional**: Setting this will only get the user's metrics and not the repository's.
 
 #### Outputs
 

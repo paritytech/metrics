@@ -24,8 +24,8 @@ const env = envsafe({
     example: "Personal Access Token",
   }),
   AUTHOR: str({
-    example: "bullrich",
-    default: undefined,
+    example: "username",
+    allowEmpty: true,
   }),
 });
 
