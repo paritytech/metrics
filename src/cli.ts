@@ -1,11 +1,11 @@
 import "dotenv/config";
 import { getOctokit } from "@actions/github";
 import chalk from "chalk";
+import { exec } from "child_process";
 import { envsafe, str } from "envsafe";
 import { existsSync } from "fs";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import { Converter } from "showdown";
-import { exec } from "child_process";
 
 import { calculateMetrics, getData } from "./analytics";
 import { ActionLogger, IssueNode, PullRequestNode } from "./github/types";
@@ -23,6 +23,10 @@ const env = envsafe({
   GITHUB_TOKEN: str({
     example: "Personal Access Token",
   }),
+  AUTHOR: str({
+    example: "bullrich",
+    default: undefined,
+  }),
 });
 
 const chalkLogger: ActionLogger = {
@@ -36,6 +40,8 @@ const repo = {
   owner: env.OWNER,
   repo: env.REPO,
 };
+
+const author: string | undefined = env.AUTHOR;
 
 const fetchInformation = async (): Promise<{
   prs: PullRequestNode[];
@@ -68,13 +74,15 @@ const fetchInformation = async (): Promise<{
 };
 
 function getCommandLine(): string {
+  // "win64" is not inside the enum, so we must circumvent it somehow
+  if (process.platform.startsWith("win")) {
+    return "start";
+  }
+
   switch (process.platform) {
     case "darwin":
       return "open";
     case "win32":
-      return "start";
-    // @ts-ignore process.platform doesn't have win64 for some reason
-    case "win64":
       return "start";
     default:
       return "xdg-open";
@@ -83,7 +91,7 @@ function getCommandLine(): string {
 
 const action = async () => {
   const { prs, issues } = await fetchInformation();
-  const report = calculateMetrics(chalkLogger, repo, prs, issues);
+  const report = calculateMetrics(chalkLogger, repo, prs, issues, author);
 
   const markdownContent = report.summary.stringify();
   await writeFile("./report.md", markdownContent);
@@ -92,7 +100,7 @@ const action = async () => {
   console.log("Converting text to HTML");
   await writeFile(
     "./index.html",
-    generateSite(`${env.OWNER}/${env.REPO}`, htmlText)
+    generateSite(`${env.OWNER}/${env.REPO}`, htmlText),
   );
   exec(`${getCommandLine()} ./index.html`);
 };

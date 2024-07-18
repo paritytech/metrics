@@ -58,7 +58,8 @@ export const getMetrics = async (
   api: GitHubClient,
   logger: ActionLogger,
   repo: { owner: string; repo: string },
+  author?: string,
 ): Promise<MetricsReport> => {
   const { prs, issues } = await getData(api, logger, repo);
-  return calculateMetrics(logger, repo, prs, issues);
+  return calculateMetrics(logger, repo, prs, issues, author);
 };

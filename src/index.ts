@@ -24,11 +24,13 @@ const getRepo = (ctx: Context) => {
 
 const repo = getRepo(context);
 
+const author = getInput("author", { required: false });
+
 setOutput("repo", `${repo.owner}/${repo.repo}`);
 
 const token = getInput("GITHUB_TOKEN", { required: true });
 const logger = generateCoreLogger();
-getMetrics(getOctokit(token), logger, repo)
+getMetrics(getOctokit(token), logger, repo, author)
   .then(async (result) => {
     await writeFile("./report.md", result.summary.stringify());
 
