@@ -46,7 +46,9 @@ export class PullRequestAnalytics {
     const reviewList = prList.flatMap((pr) => pr.reviews.nodes);
     const reviewers = this.getTopMonthlyReviewers(reviewList);
 
-    const topReviewer = this.getTopReviewer(reviewList);
+    const topReviewer = this.getTopReviewer(
+      reviewList.filter((r) => !!r.author?.login),
+    );
 
     return {
       ...prMetric,
@@ -189,7 +191,12 @@ export class PullRequestAnalytics {
     for (const review of reviews) {
       if (!review.submittedAt) {
         this.logger.debug(
-          `Skipping review from ${review.author.login} as it is has a null date`,
+          `Skipping review from ${review.author?.login} as it is has a null date`,
+        );
+        continue;
+      } else if (!review.author?.login) {
+        this.logger.debug(
+          `Skipping review ${review.submittedAt} because author object is empty`,
         );
         continue;
       }
@@ -197,7 +204,7 @@ export class PullRequestAnalytics {
       if (currentMonth.diff(moment(review.submittedAt), "month") == 0) {
         const reviewerIndex = reviewsPerUser
           .map((u) => u.user)
-          .indexOf(review.author.login);
+          .indexOf(review.author?.login);
         if (reviewerIndex > -1) {
           // If the user exists, we increment his reviews
           reviewsPerUser[reviewerIndex].reviews += 1;
