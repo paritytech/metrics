@@ -19,7 +19,7 @@ on:
         description: "Repository"
         type: string
         required: true
-        default: "bullrich"
+        default: "username"
 
 permissions:
   pages: write

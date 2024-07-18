@@ -14,6 +14,9 @@ inputs:
   owner:
     required: false
     description: The owner of the repo to fetch the information from. Defaults to the runner of the action
+  author:
+    required: false
+    description: Optional. If we want the metrics of a specific user.
 outputs:
   repo:
     description: "The name of the repo in owner/repo pattern"
