@@ -11,7 +11,8 @@
     "fix": "npx eslint --fix 'src/**/*.ts' && npx prettier --write 'src/**/*.{ts,yml}'",
     "lint": "npx eslint 'src/**/*.ts' && npx prettier --check 'src/**/*.{ts,yml}'",
     "copy": "node scripts/copy-files.js",
-    "postinstall": "yarn run copy"
+    "codegen": "graphql-codegen --config codegen.ts",
+    "postinstall": "npm-run-all copy codegen"
   },
   "repository": {
     "type": "git",
@@ -35,12 +36,14 @@
   },
   "devDependencies": {
     "@eng-automation/js-style": "^3.1.0",
+    "@graphql-codegen/cli": "^5.0.2",
     "@octokit/graphql-schema": "^14.55.1",
     "@octokit/webhooks-types": "^7.5.1",
     "@types/jest": "^29.5.12",
     "@types/showdown": "^2.0.6",
     "@vercel/ncc": "^0.38.1",
     "jest": "^29.7.0",
+    "npm-run-all": "^4.1.5",
     "ts-jest": "^29.2.2",
     "typescript": "^5.5.3"
   },
