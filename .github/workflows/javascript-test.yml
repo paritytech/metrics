@@ -3,6 +3,13 @@ name: Continuous testing
 on: [pull_request]
 
 jobs:
+  test-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check that the image builds
+        run: docker build . --file Dockerfile
+
   test:
     strategy:
       matrix:
@@ -33,6 +40,6 @@ jobs:
   conclude:
     runs-on: ubuntu-latest
     name: All tests passed
-    needs: [test]
+    needs: [test, test-image]
     steps:
       - run: echo '### Good job! All the tests passed 🚀' >> $GITHUB_STEP_SUMMARY
