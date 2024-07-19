@@ -5,7 +5,7 @@ WORKDIR /action
 COPY .yarn/ ./.yarn/
 COPY package.json yarn.lock .yarnrc.yml ./
 
-RUN yarn install --immutable --ignore-scripts
+RUN yarn install --immutable
 
 COPY . .
 
