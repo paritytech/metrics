@@ -38,9 +38,7 @@ query PullRequests($cursor: String, $owner: String!, $repo: String!) {
       }
       pageInfo {
         endCursor
-        startCursor
         hasNextPage
-        hasPreviousPage
       }
     }
   }
