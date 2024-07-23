@@ -5,8 +5,8 @@
   "main": "src/index.ts",
   "scripts": {
     "start": "node dist",
-    "build": "ncc build --license LICENSE",
-    "cli": "ncc build src/cli.ts -o .cli && node .cli",
+    "build": "npm-run-all postinstall && ncc build --license LICENSE",
+    "cli": "npm-run-all postinstall && ncc build src/cli.ts -o .cli && node .cli",
     "test": "jest",
     "fix": "npx eslint --fix 'src/**/*.ts' && npx prettier --write 'src/**/*.{ts,yml}'",
     "lint": "npx eslint 'src/**/*.ts' && npx prettier --check 'src/**/*.{ts,yml}'",
