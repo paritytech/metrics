@@ -9,6 +9,8 @@ RUN yarn install --immutable --mode skip-build
 
 COPY . .
 
+RUN yarn postinstall
+
 RUN yarn run build
 
 FROM node:22-slim
