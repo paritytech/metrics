@@ -1,5 +1,7 @@
 import type { GitHub } from "@actions/github/lib/utils";
 
+import { IssuesQuery, PullRequestsQuery } from "./queries";
+
 export interface ActionLogger {
   debug(message: string): void;
   info(message: string): void;
@@ -18,39 +20,17 @@ export interface PageInfoQuery {
   hasPreviousPage: boolean;
 }
 
-export interface PullRequestNode {
-  title: string;
-  number: number;
-  createdAt: string;
-  state: "OPEN" | "CLOSED" | "MERGED";
-  mergedAt: string | null;
-  additions: number;
-  deletions: number;
-  author: Author;
-  reviews: {
-    totalCount: number;
-    nodes: {
-      submittedAt: string | null;
-      state: "APPROVED" | "COMMENTED" | "CHANGES_REQUESTED";
-      author: { login: string; avatarUrl: string };
-      comments: { totalCount: number };
-    }[];
-  };
-}
-
-export interface IssueNode {
-  title: string;
-  number: number;
-  state: "OPEN" | "CLOSED";
-  createdAt: string;
-  closedAt: string | null;
-  author: Author;
-  authorAssociation: "NONE" | "CONTRIBUTOR" | "MEMBER" | string;
-  comments: {
-    totalCount: number;
-    nodes: {
-      createdAt: string;
-      author: Author;
-    }[];
-  };
-}
+// NonNullable is abused to not have to use a million of '?' signs
+export type PullRequestNode = NonNullable<
+  NonNullable<
+    NonNullable<
+      NonNullable<PullRequestsQuery["repository"]>["pullRequests"]
+    >["nodes"]
+  >[number]
+>;
+// Have you ever seen a more beautiful type declaration?
+export type IssueNode = NonNullable<
+  NonNullable<
+    NonNullable<NonNullable<IssuesQuery["repository"]>["issues"]>["nodes"]
+  >[number]
+>;

@@ -1,33 +1,16 @@
-import { PullRequestsQuery, PullRequestsQueryVariables } from "./queries";
-import ISSUE_LIST_QUERY from "./queries/IssueList";
+import {
+  IssuesQuery,
+  IssuesQueryVariables,
+  PullRequestsQuery,
+  PullRequestsQueryVariables,
+} from "./queries";
 import PULL_REQUEST_LIST_QUERY from "./queries/PullRequestList";
 import {
   ActionLogger,
   GitHubClient,
   IssueNode,
-  PageInfoQuery,
   PullRequestNode,
 } from "./types";
-
-interface PullRequestList {
-  repository: {
-    pullRequests: {
-      totalCount: number;
-      nodes: PullRequestNode[];
-      pageInfo: PageInfoQuery;
-    };
-  };
-}
-
-interface IssueList {
-  repository: {
-    issues: {
-      totalCount: number;
-      nodes: IssueNode[];
-      pageInfo: PageInfoQuery;
-    };
-  };
-}
 
 const WAIT_TIME = 60_000;
 const PAGE_BREAK = 5;
@@ -37,98 +20,89 @@ export class RepositoryApi {
   constructor(
     private readonly api: GitHubClient,
     private readonly logger: ActionLogger,
-    private readonly repo: { owner: string; repo: string }
+    private readonly repo: { owner: string; repo: string },
   ) {
     logger.debug(`API has been set up for ${repo.owner}/${repo.repo}`);
   }
 
-  async gql<T, P extends { [parameter: string]: unknown }>(
-    params: P
-  ): Promise<T> {
-    return await this.api.graphql<T>(PULL_REQUEST_LIST_QUERY, params);
-  }
-
-  async getPullRequests(): Promise<PullRequestNode[]> {
-    const prs: PullRequestNode[] = [];
+  async gql<Query, Params extends { cursor?: string | null }, Node>(
+    params: Params,
+    extractParams: (query: Query) => {
+      totalCount: number;
+      nodes?: (Node | null)[] | null;
+      pageInfo: { hasNextPage: boolean; endCursor?: string | null };
+    },
+  ): Promise<Node[]> {
+    const queryNodes: Node[] = [];
     let cursor: string | null = null;
     let hasNextPage: boolean = false;
     let currentPage: number = 0;
-
-    this.logger.info(
-      `Extracting all PR information from ${this.repo.owner}/${this.repo.repo}`
-    );
     do {
-      /*
-      const query: PullRequestsQuery = await this.gql<
-        PullRequestsQuery,
-        PullRequestsQueryVariables
-      >({ cursor, ...this.repo });
-      */
+      const query = await this.api.graphql<Query>(PULL_REQUEST_LIST_QUERY, {
+        ...params,
+        cursor,
+      });
 
-      const query: PullRequestList = await this.api.graphql<PullRequestList>(
-        PULL_REQUEST_LIST_QUERY,
-        {
-          cursor,
-          ...this.repo,
-        }
-      );
+      const { totalCount, nodes, pageInfo } = extractParams(query);
 
-      const totalPages =
-        Math.floor(query?.repository?.pullRequests?.totalCount / 50) + 1;
+      const totalPages = Math.floor(totalCount / 50) + 1;
       this.logger.info(`Querying page ${++currentPage}/${totalPages}`);
-      const { nodes, pageInfo } = query.repository.pullRequests;
-      prs.push(...nodes);
+      if (nodes) {
+        for (const node of nodes) {
+          if (node !== null) {
+            queryNodes.push(node);
+          }
+        }
+      }
       hasNextPage = pageInfo.hasNextPage;
-      cursor = pageInfo.endCursor;
+      cursor = pageInfo.endCursor ?? null;
       if (hasNextPage && currentPage % PAGE_BREAK === 0) {
         this.logger.debug(
-          `Pausing for ${WAIT_TIME / 1000} seconds to not hit secondary limits`
+          `Pausing for ${WAIT_TIME / 1000} seconds to not hit secondary limits`,
         );
         await new Promise<void>((resolve) =>
-          setTimeout(() => resolve(), WAIT_TIME)
+          setTimeout(() => resolve(), WAIT_TIME),
         );
       }
     } while (hasNextPage);
 
-    this.logger.info(`Found information for ${prs.length} pull requests`);
+    return queryNodes;
+  }
+
+  async getPullRequests(): Promise<PullRequestNode[]> {
+    this.logger.info(
+      `Extracting all PR information from ${this.repo.owner}/${this.repo.repo}`,
+    );
+    const prs = await this.gql<
+      PullRequestsQuery,
+      PullRequestsQueryVariables,
+      PullRequestNode
+    >(this.repo, (query) => {
+      if (!query.repository?.pullRequests) {
+        throw new Error("query.repository.pullRequests is empty!");
+      }
+      return query.repository.pullRequests;
+    });
+
+    this.logger.info(`Found information for ${prs.length} issues`);
 
     return prs;
   }
 
   async getIssues(): Promise<IssueNode[]> {
-    const issues: IssueNode[] = [];
-    let cursor: string | null = null;
-    let hasNextPage: boolean = false;
-    let currentPage: number = 0;
-
     this.logger.info(
-      `Extracting all issue information from ${this.repo.owner}/${this.repo.repo}`
+      `Extracting all issue information from ${this.repo.owner}/${this.repo.repo}`,
     );
-    do {
-      const query: IssueList = await this.api.graphql<IssueList>(
-        ISSUE_LIST_QUERY,
-        {
-          cursor,
-          ...this.repo,
-        }
-      );
-      const totalPages =
-        Math.floor(query.repository.issues.totalCount / 50) + 1;
-      this.logger.info(`Querying page ${++currentPage}/${totalPages}`);
-      const { nodes, pageInfo } = query.repository.issues;
-      issues.push(...nodes);
-      hasNextPage = pageInfo.hasNextPage;
-      cursor = pageInfo.endCursor;
 
-      if (hasNextPage && currentPage % PAGE_BREAK === 0) {
-        this.logger.debug(
-          `Pausing for ${WAIT_TIME / 1000} seconds to not hit secondary limits`
-        );
-        await new Promise<void>((resolve) =>
-          setTimeout(() => resolve(), WAIT_TIME)
-        );
-      }
-    } while (hasNextPage);
+    const issues = await this.gql<IssuesQuery, IssuesQueryVariables, IssueNode>(
+      this.repo,
+      (query) => {
+        if (!query.repository?.issues) {
+          throw new Error("query.repository.issues is empty!");
+        }
+        return query.repository.issues;
+      },
+    );
 
     this.logger.info(`Found information for ${issues.length} issues`);
 
