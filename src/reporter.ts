@@ -7,6 +7,7 @@ import {
   PullRequestMetrics,
 } from "./report/types";
 import { UserMetrics } from "./report/user";
+import { Repo } from "./github/types";
 
 export const generateSummary = (
   repo: { owner: string; repo: string },
@@ -290,13 +291,13 @@ gantt
 
 export const generateUserSummary = (
   author: string,
-  repo: { owner: string; repo: string },
+  repos: Repo[],
   metrics: UserMetrics,
 ): typeof summary => {
   let text = summary.addHeading(
-    `Metrics for @${author} in <code>${repo.owner}/${repo.repo}</code>`,
+    `Metrics for @${author}`,
     1,
-  );
+  ).addHeading("Repos used", 3).addList(repos.map(({owner,repo}) =>`<code>${owner}/${repo}</code>`));
 
   text = text
     .addHeading("Pull Request Metrics", 2)
