@@ -27,19 +27,22 @@ export class IssueAnalytics {
   generateMonthlyTotals(issues: IssueNode[]): IssuesMetrics["monthlyTotals"] {
     this.logger.debug("Calculating monthly metrics");
     const creation = calculateEventsPerMonth(
-      issues.map((issue) => issue.createdAt),
+      issues.map((issue) => issue.createdAt as string),
     );
     const comments = extractMatchesFromDate(
       issues
         .filter((issue) => issue.comments.totalCount > 0)
         .map((i) => {
-          return { date: i.createdAt, comments: i.comments.totalCount };
+          return {
+            date: i.createdAt as string,
+            comments: i.comments.totalCount,
+          };
         }),
       (value) => value.comments,
     );
 
     const closeDates = issues
-      .filter((issue) => !!issue.closedAt)
+      .filter((issue) => !!(issue.closedAt as string))
       .map(({ closedAt }) => closedAt as string);
     const closedPrPerMonth = calculateEventsPerMonth(closeDates);
 
@@ -58,25 +61,29 @@ export class IssueAnalytics {
       issues
         .filter(({ comments }) => comments.totalCount > 0)
         .map((issue) => {
+          if (!issue.comments.nodes) {
+            return null;
+          }
           return {
-            date: issue.comments.nodes[0].createdAt as string,
+            date: issue.comments.nodes[0]?.createdAt as string,
             daysToFirstComment: calculateDaysBetweenDates(
-              issue.createdAt,
-              issue.comments.nodes[0].createdAt as string,
+              issue.createdAt as string,
+              issue.comments.nodes[0]?.createdAt as string,
             ),
           };
-        }),
+        })
+        .filter((i) => i !== null),
       (value) => value.daysToFirstComment,
     );
 
     const averageTimeToClose = gatherValuesPerMonth(
       issues
-        .filter(({ closedAt }) => !!closedAt)
+        .filter(({ closedAt }) => !!(closedAt as string | null))
         .map((issue) => {
           return {
             date: issue.closedAt as string,
             daysToClose: calculateDaysBetweenDates(
-              issue.createdAt,
+              issue.createdAt as string,
               issue.closedAt as string,
             ),
           };
@@ -86,7 +93,10 @@ export class IssueAnalytics {
 
     const averageCommentsPerMonth = gatherValuesPerMonth(
       issues.map((issue) => {
-        return { date: issue.createdAt, comments: issue.comments.totalCount };
+        return {
+          date: issue.createdAt as string,
+          comments: issue.comments.totalCount,
+        };
       }),
       (reviews) => reviews.comments,
     );
@@ -104,17 +114,20 @@ export class IssueAnalytics {
     const totalComments = issues.map(({ comments }) => comments.totalCount);
     const totalCloseTime = issues
       .map((issue) =>
-        issue.closedAt
-          ? calculateDaysBetweenDates(issue.createdAt, issue.closedAt)
+        (issue.closedAt as string | null)
+          ? calculateDaysBetweenDates(
+              issue.createdAt as string,
+              issue.closedAt as string,
+            )
           : -1,
       )
       .filter((v) => v > -1);
     const totalTimeToFirstComment = issues
-      .filter(({ comments }) => comments.nodes.length > 0)
+      .filter(({ comments }) => comments.nodes && comments.nodes.length > 0)
       .map((issue) =>
         calculateDaysBetweenDates(
-          issue.createdAt,
-          issue.comments.nodes[0].createdAt,
+          issue.createdAt as string,
+          issue.comments.nodes?.[0]?.createdAt as string,
         ),
       );
     return {
