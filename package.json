@@ -11,8 +11,7 @@
     "fix": "npx eslint --fix 'src/**/*.ts' && npx prettier --write 'src/**/*.{ts,yml}'",
     "lint": "npx eslint 'src/**/*.ts' && npx prettier --check 'src/**/*.{ts,yml}'",
     "copy": "node scripts/copy-files.js",
-    "postinstall": "yarn run copy",
-    "prebuild": "yarn run copy"
+    "postinstall": "yarn run copy"
   },
   "repository": {
     "type": "git",
