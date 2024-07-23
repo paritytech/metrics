@@ -43,11 +43,15 @@ export class PullRequestAnalytics {
     const monthlyMetrics = this.generateMonthlyMetrics(prs);
     const totalMetrics = this.generateTotalMetrics(prs);
 
-    const reviewList = prList.flatMap((pr) => pr.reviews.nodes);
-    const reviewers = this.getTopMonthlyReviewers(reviewList);
+    const reviewList = prList.flatMap((pr) => pr.reviews?.nodes);
+    const reviewers = this.getTopMonthlyReviewers(
+      reviewList as NonNullable<PullRequestNode["reviews"]>["nodes"],
+    );
 
     const topReviewer = this.getTopReviewer(
-      reviewList.filter((r) => !!r.author?.login),
+      reviewList.filter((r) => !!r?.author?.login) as NonNullable<
+        PullRequestNode["reviews"]
+      >["nodes"],
     );
 
     return {
@@ -133,22 +137,27 @@ export class PullRequestAnalytics {
     const averages: PullRequestInfo[] = [];
 
     for (const pr of prList) {
-      const creation = moment(pr.createdAt);
+      const creation = moment(pr.createdAt as string);
 
-      const firstReview =
-        pr.reviews.nodes.length > 0 ? pr.reviews.nodes[0].submittedAt : null;
+      if (!pr.reviews?.nodes || !pr.author) {
+        continue;
+      }
+      const reviews = pr.reviews.nodes;
+
+      const firstReview: string | null =
+        reviews.length > 0 ? (reviews[0]?.submittedAt as string) : null;
       const timeToFirstReview =
         firstReview != null
           ? moment(firstReview).diff(creation, "hours")
           : null;
       const timeToClose =
         pr.mergedAt != null
-          ? moment(pr.mergedAt).diff(creation, "hours")
+          ? moment(pr.mergedAt as string).diff(creation, "hours")
           : null;
       averages.push({
         number: pr.number,
-        creation: pr.createdAt,
-        author: pr.author.login,
+        creation: pr.createdAt as string,
+        author: pr.author?.login,
         close: timeToClose
           ? { date: pr.mergedAt as string, daysSinceCreation: timeToClose }
           : undefined,
@@ -169,27 +178,33 @@ export class PullRequestAnalytics {
 
   /** Returns the reviewer who gave the biggest amount of reviews per month */
   getTopMonthlyReviewers(
-    reviews: PullRequestNode["reviews"]["nodes"],
+    reviews: NonNullable<PullRequestNode["reviews"]>["nodes"],
   ): PullRequestMetrics["reviewers"] {
-    if (reviews.length === 0) {
+    if (!reviews || reviews.length === 0) {
       return [];
     }
     reviews.sort((a, b) =>
-      moment(a.submittedAt as string).diff(
-        moment(b.submittedAt as string),
+      moment(a?.submittedAt as string).diff(
+        moment(b?.submittedAt as string),
         "days",
       ),
     );
 
     // We get the month of the first date
-    let currentMonth = moment(reviews[0].submittedAt).startOf("month");
+    let currentMonth = moment(reviews[0]?.submittedAt as string).startOf(
+      "month",
+    );
 
     const monthsWithMatches: PullRequestMetrics["reviewers"] = [];
     let reviewsPerUser: { user: string; reviews: number; avatar: string }[] =
       [];
 
     for (const review of reviews) {
-      if (!review.submittedAt) {
+      if (!review) {
+        continue;
+      }
+
+      if (!(review.submittedAt as string | null)) {
         this.logger.debug(
           `Skipping review from ${review.author?.login} as it is has a null date`,
         );
@@ -201,7 +216,9 @@ export class PullRequestAnalytics {
         continue;
       }
       // If it happened in the same month
-      if (currentMonth.diff(moment(review.submittedAt), "month") == 0) {
+      if (
+        currentMonth.diff(moment(review.submittedAt as string), "month") == 0
+      ) {
         const reviewerIndex = reviewsPerUser
           .map((u) => u.user)
           .indexOf(review.author?.login);
@@ -213,7 +230,7 @@ export class PullRequestAnalytics {
           reviewsPerUser.push({
             user: review.author.login,
             reviews: 1,
-            avatar: review.author.avatarUrl,
+            avatar: review.author.avatarUrl as string,
           });
         }
       } else {
@@ -238,14 +255,14 @@ export class PullRequestAnalytics {
         }
 
         // We move the month to the next one
-        currentMonth = moment(review.submittedAt).startOf("month");
+        currentMonth = moment(review.submittedAt as string).startOf("month");
         // We reset the monthly review object
         reviewsPerUser = [];
         // We add a review to the current user
         reviewsPerUser.push({
           user: review.author.login,
           reviews: 1,
-          avatar: review.author.avatarUrl,
+          avatar: review.author.avatarUrl as string,
         });
       }
     }
@@ -255,21 +272,29 @@ export class PullRequestAnalytics {
 
   /** Returns the reviewer who gave the biggest amount of reviews */
   getTopReviewer(
-    reviews: PullRequestNode["reviews"]["nodes"],
+    reviews: NonNullable<PullRequestNode["reviews"]>["nodes"],
   ): PullRequestMetrics["topReviewer"] {
-    if (reviews.length === 0) {
+    if (!reviews || reviews.length === 0) {
       return null;
     }
 
     const usersWithReviews: Reviewer[] = [];
-    for (const {
-      author: { login, avatarUrl },
-    } of reviews) {
+    for (const r of reviews) {
+      if (!r?.author) {
+        continue;
+      }
+      const {
+        author: { login, avatarUrl },
+      } = r;
       const index = usersWithReviews.map((u) => u.user).indexOf(login);
       if (index > -1) {
         usersWithReviews[index].reviews += 1;
       } else {
-        usersWithReviews.push({ user: login, avatar: avatarUrl, reviews: 1 });
+        usersWithReviews.push({
+          user: login,
+          avatar: avatarUrl as string,
+          reviews: 1,
+        });
       }
     }
 
