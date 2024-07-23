@@ -22,9 +22,7 @@ export class UserAnalytics {
     private readonly logger: ActionLogger,
     private readonly author: string,
   ) {
-    logger.debug(
-      `Reporter has been configured for ${author}'s contribution`,
-    );
+    logger.debug(`Reporter has been configured for ${author}'s contribution`);
   }
 
   private isAuthor(author?: Author | null): boolean {

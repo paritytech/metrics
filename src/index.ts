@@ -17,8 +17,8 @@ const getRepo = (ctx: Context): Repo[] => {
 
   const repos = repo.split(",");
   return repos.map((owner_repo) => {
-    const [owner, repo] = owner_repo.split("/");
-    return { owner, repo };
+    const [owner, repository] = owner_repo.split("/");
+    return { owner, repo: repository };
   });
 };
 
@@ -44,8 +44,8 @@ const token = getInput("GITHUB_TOKEN", { required: true });
 const logger = generateCoreLogger();
 if (author) {
   getUserMetrics(getOctokit(token), logger, repo, author)
-    .then(async ({ summary }) => {
-      await writeOutputFile(summary, `Report for ${author}`);
+    .then(async (report) => {
+      await writeOutputFile(report.summary, `Report for ${author}`);
     })
     .catch(setFailed);
 } else {
