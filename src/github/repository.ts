@@ -4,6 +4,7 @@ import {
   PullRequestsQuery,
   PullRequestsQueryVariables,
 } from "./queries";
+import ISSUE_LIST_QUERY from "./queries/IssueList";
 import PULL_REQUEST_LIST_QUERY from "./queries/PullRequestList";
 import {
   ActionLogger,
@@ -26,6 +27,7 @@ export class RepositoryApi {
   }
 
   async gql<Query, Params extends { cursor?: string | null }, Node>(
+    graphqlQuery: string,
     params: Params,
     extractParams: (query: Query) => {
       totalCount: number;
@@ -38,7 +40,7 @@ export class RepositoryApi {
     let hasNextPage: boolean = false;
     let currentPage: number = 0;
     do {
-      const query = await this.api.graphql<Query>(PULL_REQUEST_LIST_QUERY, {
+      const query = await this.api.graphql<Query>(graphqlQuery, {
         ...params,
         cursor,
       });
@@ -77,7 +79,7 @@ export class RepositoryApi {
       PullRequestsQuery,
       PullRequestsQueryVariables,
       PullRequestNode
-    >(this.repo, (query) => {
+    >(PULL_REQUEST_LIST_QUERY, this.repo, (query) => {
       if (!query.repository?.pullRequests) {
         throw new Error("query.repository.pullRequests is empty!");
       }
@@ -95,8 +97,10 @@ export class RepositoryApi {
     );
 
     const issues = await this.gql<IssuesQuery, IssuesQueryVariables, IssueNode>(
+      ISSUE_LIST_QUERY,
       this.repo,
       (query) => {
+        console.log(query.repository);
         if (!query.repository?.issues) {
           throw new Error("query.repository.issues is empty!");
         }
