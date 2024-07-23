@@ -1,13 +1,11 @@
 # GitHub metrics
 
-Get GitHub metrics for a repository.
+Get GitHub metrics for a repository or a user.
 
 Supports obtaining metrics from:
 
 - Pull Requests
 - Issues
-
-It also supports obtaining user metrics related to a repository.
 
 ## To start
 
@@ -22,6 +20,7 @@ If the repository is private you will need to enable the `repo` option.
 Copy `example.env` as `.env` and replace the variables with your own.
 
 > If you want to get a user's related metric, write their username in the `AUTHOR` field, if not, just leave it empty.
+> You can get user metrics for more than one repository by filling the `REPO` field with the desired repos separated by a comma (`org/repo1,org/repo2,org/repo3`).
 
 Run:
 
@@ -43,6 +42,7 @@ And select `Run workflow` to run the system in this repository.
 After a couple of minutes, the [GitHub action summary](https://github.blog/2022-05-09-supercharging-github-actions-with-job-summaries/) will contain all the results.
 
 You can also use the user metrics workflow here: [![Fetch user metrics](https://github.com/paritytech/metrics/actions/workflows/generate-user-metrics.yml/badge.svg)](https://github.com/paritytech/metrics/actions/workflows/generate-user-metrics.yml)
+> You can get user metrics for more than one repository by filling the `REPO` field with the desired repos separated by a comma (`org/repo1,org/repo2,org/repo3`).
 
 #### Install in your own repository
 
@@ -75,10 +75,7 @@ jobs:
   - If the repo is public, or is the same repo where the action is being executed, you can use `${{ github.token }}`
   - If the repo is big (more than 700 PRs), or it is a different private repo you need to use a [Personal Access Token](https://github.com/settings/tokens) with `public_repo` enabled.
     - This is required because the action's token will hit it's limit before finishing crawling the repository data.
-- `owner`: Name of the owner of the repository.
-  - **Optional**.
-  - Defaults to the owner/organization who is running the action.
-- `repo`: Name of the repository to crawl.
+- `repo`: Name of the repository to crawl in `owner/repo`.
   - **Optional**.
   - Default to the repository's name where this action is running.
 - `author`: Username of the account to obtain metrics
