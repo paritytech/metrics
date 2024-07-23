@@ -1,61 +1,59 @@
-import { getInput, setFailed, setOutput } from "@actions/core";
+import { getInput, setFailed, setOutput, summary } from "@actions/core";
 import { context, getOctokit } from "@actions/github";
 import { Context } from "@actions/github/lib/context";
 import { writeFile } from "fs/promises";
 import { Converter } from "showdown";
 
-import { getMetrics } from "./analytics";
+import { getRepoMetrics, getUserMetrics } from "./analytics";
+import { Repo } from "./github/types";
 import { generateSite } from "./render";
 import { generateCoreLogger } from "./util";
 
-const getRepo = (ctx: Context) => {
-  let repo = getInput("repo", { required: false });
+const getRepo = (ctx: Context): Repo[] => {
+  const repo = getInput("repo", { required: false });
   if (!repo) {
-    repo = ctx.repo.repo;
+    return [{ owner: ctx.repo.owner, repo: ctx.repo.repo }];
   }
 
-  let owner = getInput("owner", { required: false });
-  if (!owner) {
-    owner = ctx.repo.owner;
-  }
-
-  return { repo, owner };
+  const repos = repo.split(",");
+  return repos.map((owner_repo) => {
+    const [owner, repo] = owner_repo.split("/");
+    return { owner, repo };
+  });
 };
 
 const repo = getRepo(context);
 
 const author = getInput("author", { required: false });
 
-setOutput("repo", `${repo.owner}/${repo.repo}`);
+setOutput("repo", `${repo[0].owner}/${repo[0].repo}`);
+
+const writeOutputFile = async (result: typeof summary, title: string) => {
+  await writeFile("./report.md", summary.stringify());
+  // We write the HTML file
+  const converter = new Converter({ ghCodeBlocks: true });
+  const htmlText = converter.makeHtml(result.stringify());
+  console.log("Converting text to HTML");
+  await writeFile("./index.html", generateSite(title, htmlText));
+
+  // We finally write the job output
+  await result.write();
+};
 
 const token = getInput("GITHUB_TOKEN", { required: true });
 const logger = generateCoreLogger();
-getMetrics(getOctokit(token), logger, repo, author)
-  .then(async (result) => {
-    await writeFile("./report.md", result.summary.stringify());
-
-    // We set the report for both outputs
-    if (result.prMetrics) {
+if (author) {
+  getUserMetrics(getOctokit(token), logger, repo, author)
+    .then(async ({ summary }) => {
+      await writeOutputFile(summary, `Report for ${author}`);
+    })
+    .catch(setFailed);
+} else {
+  getRepoMetrics(getOctokit(token), logger, repo[0])
+    .then(async (result) => {
       setOutput("pr-report", JSON.stringify(result.prMetrics));
-    } else {
-      logger.warn("No 'pr-report' generated as output");
-    }
-    if (result.issueMetrics) {
       setOutput("issue-report", JSON.stringify(result.issueMetrics));
-    } else {
-      logger.warn("No 'issue-report' generated as output");
-    }
-
-    // We write the HTML file
-    const converter = new Converter({ ghCodeBlocks: true });
-    const htmlText = converter.makeHtml(result.summary.stringify());
-    console.log("Converting text to HTML");
-    await writeFile(
-      "./index.html",
-      generateSite(`${repo.owner}/${repo.repo}`, htmlText),
-    );
-
-    // We finally write the job output
-    await result.summary.write();
-  })
-  .catch(setFailed);
+      await writeOutputFile(result.summary, `${repo[0].owner}/${repo[0].repo}`);
+    })
+    .catch(setFailed);
+}

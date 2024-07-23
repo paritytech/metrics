@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { summary } from "@actions/core";
 import { getOctokit } from "@actions/github";
 import chalk from "chalk";
 import { exec } from "child_process";
@@ -7,18 +8,18 @@ import { existsSync } from "fs";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import { Converter } from "showdown";
 
-import { calculateMetrics, getData } from "./analytics";
-import { ActionLogger, IssueNode, PullRequestNode } from "./github/types";
+import {
+  calculateRepoMetrics,
+  calculateUserMetrics,
+  getData,
+} from "./analytics";
+import { ActionLogger, IssueNode, PullRequestNode, Repo } from "./github/types";
 import { generateSite } from "./render";
 
 const env = envsafe({
-  OWNER: str({
-    desc: "Owner of the repository",
-    example: "bullrich",
-  }),
   REPO: str({
-    desc: "Name of the repository",
-    example: "metrics",
+    desc: "Name of the repositories separated by a comma",
+    example: "paritytech/metrics",
   }),
   GITHUB_TOKEN: str({
     example: "Personal Access Token",
@@ -36,14 +37,13 @@ const chalkLogger: ActionLogger = {
   error: console.error,
 };
 
-const repo = {
-  owner: env.OWNER,
-  repo: env.REPO,
-};
+const repos = env.REPO.split(",");
 
 const author: string | undefined = env.AUTHOR;
 
-const fetchInformation = async (): Promise<{
+const fetchInformation = async (
+  repo: Repo,
+): Promise<{
   prs: PullRequestNode[];
   issues: IssueNode[];
 }> => {
@@ -90,17 +90,45 @@ function getCommandLine(): string {
 }
 
 const action = async () => {
-  const { prs, issues } = await fetchInformation();
-  const report = calculateMetrics(chalkLogger, repo, prs, issues, author);
+  let report: typeof summary;
+  if (author) {
+    const allPrs: PullRequestNode[] = [];
+    const allIssues: IssueNode[] = [];
+    for (const owner_repo of repos) {
+      const [owner, repo] = owner_repo.split("/");
+      const { prs, issues } = await fetchInformation({ owner, repo });
+      allPrs.push(...prs);
+      allIssues.push(...issues);
+    }
+    report = calculateUserMetrics(
+      chalkLogger,
+      repos.map((owner_repo) => {
+        const [owner, repo] = owner_repo.split("/");
+        return { owner, repo };
+      }),
+      allPrs,
+      allIssues,
+      author,
+    ).summary;
+  } else {
+    const [owner, repo] = repos[0].split("/");
+    const { prs, issues } = await fetchInformation({ owner, repo });
+    report = calculateRepoMetrics(
+      chalkLogger,
+      { owner, repo },
+      prs,
+      issues,
+    ).summary;
+  }
 
-  const markdownContent = report.summary.stringify();
+  const markdownContent = report.stringify();
   await writeFile("./report.md", markdownContent);
   const converter = new Converter({ ghCodeBlocks: true });
   const htmlText = converter.makeHtml(markdownContent);
   console.log("Converting text to HTML");
   await writeFile(
     "./index.html",
-    generateSite(`${env.OWNER}/${env.REPO}`, htmlText),
+    generateSite(`Metrics for ${author}`, htmlText),
   );
   exec(`${getCommandLine()} ./index.html`);
 };
