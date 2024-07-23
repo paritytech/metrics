@@ -13,13 +13,6 @@ export type GitHubClient = InstanceType<typeof GitHub>;
 
 export type Author = { login: string };
 
-export interface PageInfoQuery {
-  endCursor: string | null;
-  startCursor: string | null;
-  hasNextPage: boolean;
-  hasPreviousPage: boolean;
-}
-
 // NonNullable is abused to not have to use a million of '?' signs
 export type PullRequestNode = NonNullable<
   NonNullable<
