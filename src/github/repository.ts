@@ -26,6 +26,13 @@ export class RepositoryApi {
     logger.debug(`API has been set up for ${repo.owner}/${repo.repo}`);
   }
 
+  /**
+   * Iterates over many pages for a query and returns all the values as nodes
+   * @param graphqlQuery the query as a string
+   * @param params the params containing the repo information
+   * @param extractParams a method to extract the page info and the node to be returned
+   * @returns an array of Node extracted from the query result
+   */
   async gql<Query, Params extends { cursor?: string | null }, Node>(
     graphqlQuery: string,
     params: Params,
