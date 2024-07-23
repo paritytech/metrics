@@ -2,11 +2,14 @@ FROM node:22 as Builder
 
 WORKDIR /action
 
-COPY package.json yarn.lock ./
+COPY .yarn/ ./.yarn/
+COPY package.json yarn.lock .yarnrc.yml ./
 
-RUN yarn install --immutable --ignore-scripts
+RUN yarn install --immutable --mode skip-build
 
 COPY . .
+
+RUN yarn postinstall
 
 RUN yarn run build
 

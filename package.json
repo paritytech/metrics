@@ -11,8 +11,7 @@
     "fix": "npx eslint --fix 'src/**/*.ts' && npx prettier --write 'src/**/*.{ts,yml}'",
     "lint": "npx eslint 'src/**/*.ts' && npx prettier --check 'src/**/*.{ts,yml}'",
     "copy": "node scripts/copy-files.js",
-    "postinstall": "yarn run copy",
-    "prebuild": "yarn run copy"
+    "postinstall": "yarn run copy"
   },
   "repository": {
     "type": "git",
@@ -36,7 +35,7 @@
   },
   "devDependencies": {
     "@eng-automation/js-style": "^3.1.0",
-    "@octokit/graphql-schema": "^15.25.0",
+    "@octokit/graphql-schema": "^14.55.1",
     "@octokit/webhooks-types": "^7.5.1",
     "@types/jest": "^29.5.12",
     "@types/showdown": "^2.0.6",
