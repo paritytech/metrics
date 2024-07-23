@@ -28,7 +28,7 @@ export class UserAnalytics {
     );
   }
 
-  private isAuthor(author: Author): boolean {
+  private isAuthor(author?: Author | null): boolean {
     return (
       author?.login?.toLocaleUpperCase() === this.author.toLocaleUpperCase()
     );
@@ -78,34 +78,34 @@ export class UserAnalytics {
     const nonUserPRs = prList.filter((pr) => !this.isAuthor(pr.author));
 
     const userReviews = nonUserPRs
-      .flatMap((pr) => pr.reviews.nodes)
-      .filter((review) => this.isAuthor(review.author));
+      .flatMap((pr) => pr.reviews?.nodes)
+      .filter((review) => this.isAuthor(review?.author));
 
     this.logger.debug(
       `Found ${userReviews.length} reviews made by '${this.author}'`,
     );
     const reviewsPerMonth = calculateEventsPerMonth(
-      userReviews.map((r) => r.submittedAt as string).filter((date) => !!date),
+      userReviews.map((r) => r?.submittedAt as string).filter((date) => !!date),
     );
     const commentsPerPr = nonUserPRs
       .map((pr) => {
         return {
-          date: pr.createdAt,
-          comments: pr.reviews.nodes.reduce(
+          date: pr.createdAt as string,
+          comments: pr.reviews?.nodes?.reduce(
             (value, review) =>
               value +
               // We get the amount of comments in each review
-              (this.isAuthor(review.author) ? review.comments.totalCount : 0),
+              (this.isAuthor(review?.author) ? (review?.comments.totalCount ?? 0) : 0),
             0,
           ),
         };
       })
       // We only want prs where they participated
-      .filter((r) => r.comments > 0);
+      .filter(({ comments }) => comments && comments > 0);
     //
     const commentsPerPRPerMonth = gatherValuesPerMonth(
       commentsPerPr,
-      (val) => val.comments,
+      (val) => val.comments as number,
     );
 
     return {
@@ -124,11 +124,11 @@ export class UserAnalytics {
   > {
     // Issues where the author has commented
     const participatedIssues = issues.filter((i) =>
-      i.comments.nodes.some(({ author }) => this.isAuthor(author)),
+      i.comments.nodes?.some((issue) => this.isAuthor(issue?.author)),
     );
 
     const participatedIssuesPerMonth = calculateEventsPerMonth(
-      participatedIssues.map(({ createdAt }) => createdAt),
+      participatedIssues.map(({ createdAt }) => createdAt as string),
     );
     this.logger.debug(
       `'${this.author}' has participated in ${participatedIssues.length} issues`,
@@ -140,7 +140,7 @@ export class UserAnalytics {
       .filter((i) => i.authorAssociation === "NONE");
 
     const nonOrgParticipatedIssuesPerMonth = calculateEventsPerMonth(
-      nonOrgIssues.map(({ createdAt }) => createdAt),
+      nonOrgIssues.map(({ createdAt }) => createdAt as string),
     );
 
     return { participatedIssuesPerMonth, nonOrgParticipatedIssuesPerMonth };
