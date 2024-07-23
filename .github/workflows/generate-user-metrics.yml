@@ -5,16 +5,11 @@ on:
     branches: ["main"]
   workflow_dispatch:
     inputs:
-      org:
-        description: "Organization"
-        type: string
-        required: false
-        default: "polkadot-fellows"
       repo:
-        description: "Repository"
+        description: "Repositories separated by comma"
         type: string
         required: false
-        default: "runtimes"
+        default: "paritytech/metrics"
       user:
         description: "User"
         type: string
@@ -35,15 +30,5 @@ jobs:
         id: metric
         with:
           GITHUB_TOKEN: ${{ github.token }}
-          owner: ${{ github.event.inputs.org }}
           repo: ${{ github.event.inputs.repo }}
           author: ${{ github.event.inputs.user }}
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4

@@ -20,12 +20,9 @@ export interface UserMetrics {
 export class UserAnalytics {
   constructor(
     private readonly logger: ActionLogger,
-    repo: { owner: string; repo: string },
     private readonly author: string,
   ) {
-    logger.debug(
-      `Reporter has been configured for ${author}'s contribution in ${repo.owner}/${repo.repo}`,
-    );
+    logger.debug(`Reporter has been configured for ${author}'s contribution`);
   }
 
   private isAuthor(author?: Author | null): boolean {

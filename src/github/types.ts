@@ -9,6 +9,8 @@ export interface ActionLogger {
   error(message: string | Error): void;
 }
 
+export type Repo = { owner: string; repo: string };
+
 export type GitHubClient = InstanceType<typeof GitHub>;
 
 export type Author = { login: string };

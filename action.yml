@@ -10,10 +10,7 @@ inputs:
     description: The token to access the repo
   repo:
     required: false
-    description: The repo to fetch the information from. Defaults to runner
-  owner:
-    required: false
-    description: The owner of the repo to fetch the information from. Defaults to the runner of the action
+    description: Name of the repository in style org/name. Defaults to runner. Can have multiple values separated by comma if it's used for user's metrics
   author:
     required: false
     description: Optional. If we want the metrics of a specific user.

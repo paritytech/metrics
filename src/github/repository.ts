@@ -107,7 +107,6 @@ export class RepositoryApi {
       ISSUE_LIST_QUERY,
       this.repo,
       (query) => {
-        console.log(query.repository);
         if (!query.repository?.issues) {
           throw new Error("query.repository.issues is empty!");
         }
