@@ -6,6 +6,7 @@ import {
   GitHubClient,
   IssueNode,
   PullRequestNode,
+  Repo,
 } from "./github/types";
 import { IssueAnalytics } from "./report/issues";
 import { PullRequestAnalytics } from "./report/pullRequests";
@@ -14,8 +15,8 @@ import { UserAnalytics } from "./report/user";
 import { generateSummary, generateUserSummary } from "./reporter";
 
 type MetricsReport = {
-  prMetrics?: PullRequestMetrics;
-  issueMetrics?: IssuesMetrics;
+  prMetrics: PullRequestMetrics;
+  issueMetrics: IssuesMetrics;
   summary: typeof summary;
 };
 
@@ -30,19 +31,25 @@ export const getData = async (
   return { prs, issues };
 };
 
-export const calculateMetrics = (
+export const calculateUserMetrics = (
+  logger: ActionLogger,
+  repos: Repo[],
+  prs: PullRequestNode[],
+  issues: IssueNode[],
+  author: string,
+): Pick<MetricsReport, "summary"> => {
+  const userReport = new UserAnalytics(logger, author);
+  const userMetrics = userReport.generateMetrics(prs, issues);
+  const userSummary = generateUserSummary(author, repos, userMetrics);
+  return { summary: userSummary };
+};
+
+export const calculateRepoMetrics = (
   logger: ActionLogger,
   repo: { owner: string; repo: string },
   prs: PullRequestNode[],
   issues: IssueNode[],
-  author?: string,
 ): MetricsReport => {
-  if (author) {
-    const userReport = new UserAnalytics(logger, repo, author);
-    const userMetrics = userReport.generateMetrics(prs, issues);
-    const userSummary = generateUserSummary(author, repo, userMetrics);
-    return { summary: userSummary };
-  }
   const prReporter = new PullRequestAnalytics(logger, repo);
   const prReport = prReporter.fetchMetricsForPullRequests(prs);
 
@@ -54,12 +61,27 @@ export const calculateMetrics = (
   return { prMetrics: prReport, issueMetrics: issueReport, summary: sum };
 };
 
-export const getMetrics = async (
+export const getRepoMetrics = async (
   api: GitHubClient,
   logger: ActionLogger,
   repo: { owner: string; repo: string },
-  author?: string,
 ): Promise<MetricsReport> => {
   const { prs, issues } = await getData(api, logger, repo);
-  return calculateMetrics(logger, repo, prs, issues, author);
+  return calculateRepoMetrics(logger, repo, prs, issues);
+};
+
+export const getUserMetrics = async (
+  api: GitHubClient,
+  logger: ActionLogger,
+  repos: Repo[],
+  author: string,
+): Promise<Pick<MetricsReport, "summary">> => {
+  const prs: PullRequestNode[] = [];
+  const issues: IssueNode[] = [];
+  for (const { owner, repo } of repos) {
+    const data = await getData(api, logger, { owner, repo });
+    prs.push(...data.prs);
+    issues.push(...data.issues);
+  }
+  return calculateUserMetrics(logger, repos, prs, issues, author);
 };
