@@ -95,7 +95,9 @@ export class UserAnalytics {
             (value, review) =>
               value +
               // We get the amount of comments in each review
-              (this.isAuthor(review?.author) ? (review?.comments.totalCount ?? 0) : 0),
+              (this.isAuthor(review?.author)
+                ? (review?.comments.totalCount ?? 0)
+                : 0),
             0,
           ),
         };
